@@ -1,27 +1,34 @@
 /* ==========================================================================
-   QuizSystem - Main Application Engine
-   Manages UI, Quiz State, Timer, Navigation, Question Palette, & Events
+   QuizSystem - Application Logic Engine
+   Handles:
+   - Quiz Setup & State Management
+   - Question Palette & 4-State Question Navigator (Current, Answered, Unanswered, Marked)
+   - Pre-submission Hint System & Post-submission Wrong Answer Learning System
+   - Step-by-Step Solution Explanations (WHY, HOW, CONCEPT, QUICK TIP)
+   - Score & Performance Analytics Engine
+   - Weak Questions Targeted Practice Generator
+   - LocalStorage History & Leaderboard Integrations
    ========================================================================== */
 
-// Global State Object
 const QuizState = {
     playerName: "",
     categoryKey: "java",
     categoryName: "Java",
     difficulty: "Easy",
     questionLimit: 10,
-    timeLimitSeconds: 300, // default 5 mins
+    timeLimitSeconds: 300,
     remainingSeconds: 300,
     timerInterval: null,
     startTime: null,
-    
-    questions: [],        // Active randomized questions
-    currentIndex: 0,      // Active question index (0..N-1)
-    userAnswers: {},      // Map of { questionId: selectedOptionIndex }
+
+    questions: [],
+    currentIndex: 0,
+    userAnswers: {},       // { questionId: optionIdx }
+    markedForReview: {},   // { questionId: true/false }
+    hintsUsed: {},         // { questionId: true/false }
     isSubmitted: false
 };
 
-// Category Display Names Mapping
 const CATEGORY_NAMES = {
     java: "Java",
     html_css: "HTML & CSS",
@@ -32,42 +39,37 @@ const CATEGORY_NAMES = {
 };
 
 document.addEventListener("DOMContentLoaded", () => {
-    // 1. Initialize Theme
+    // 1. Initialize Theme (Dark mode by default)
     StorageEngine.initTheme();
 
-    // 2. Load Saved Player Name into setup form
-    const savedName = StorageEngine.getLastPlayerName();
+    // 2. Pre-fill saved Player Name
+    const savedName = StorageEngine.getPlayerName();
     const nameInput = document.getElementById("setupPlayerName");
-    if (nameInput && savedName) {
-        nameInput.value = savedName;
-    }
+    if (nameInput && savedName) nameInput.value = savedName;
 
-    // 3. Render Views
+    // 3. Render Dashboard, Leaderboard & History
+    renderDashboard();
     renderLeaderboard();
     renderHistory();
-    renderUserDashboard();
 
-    // 4. Setup Event Listeners
+    // 4. Setup Global Event Listeners
     setupEventListeners();
 });
 
-/**
- * Event Listeners & Navigation Setup
- */
 function setupEventListeners() {
     // Theme Toggle
     const themeBtn = document.getElementById("themeToggleBtn");
     if (themeBtn) {
         themeBtn.addEventListener("click", () => {
-            const currentTheme = StorageEngine.getTheme();
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            StorageEngine.setTheme(newTheme);
-            updateThemeIcon(newTheme);
+            const current = StorageEngine.getTheme();
+            const next = current === 'dark' ? 'light' : 'dark';
+            StorageEngine.setTheme(next);
+            updateThemeIcon(next);
         });
         updateThemeIcon(StorageEngine.getTheme());
     }
 
-    // Mobile Hamburger Navigation Toggle
+    // Mobile Navigation Hamburger Toggle
     const hamburger = document.getElementById("hamburger");
     const navMenu = document.getElementById("navMenu");
     if (hamburger && navMenu) {
@@ -82,11 +84,10 @@ function setupEventListeners() {
         });
     }
 
-    // FAQ Expandable Accordion
+    // FAQ Accordions
     document.querySelectorAll(".faq-question").forEach(q => {
         q.addEventListener("click", () => {
-            const item = q.parentElement;
-            item.classList.toggle("active");
+            q.parentElement.classList.toggle("active");
         });
     });
 }
@@ -99,34 +100,32 @@ function updateThemeIcon(theme) {
 }
 
 /**
- * Pre-select Category from Category Cards & Scroll to Setup
+ * Open Setup Screen / Pre-select Category
  */
-function selectCategoryAndSetup(catKey) {
-    const catSelect = document.getElementById("setupCategory");
-    if (catSelect) {
-        catSelect.value = catKey;
+function openQuizSetup(catKey) {
+    if (catKey) {
+        const catSelect = document.getElementById("setupCategory");
+        if (catSelect) catSelect.value = catKey;
     }
 
-    const setupSection = document.getElementById("quizSetupSection");
-    if (setupSection) {
-        setupSection.style.display = "block";
-        setupSection.scrollIntoView({ behavior: "smooth" });
+    hideAllSections();
+    const setup = document.getElementById("quizSetupSection");
+    if (setup) {
+        setup.style.display = "block";
+        setup.scrollIntoView({ behavior: "smooth" });
     }
 }
 
-/**
- * Open Quiz Setup Modal / Section directly
- */
-function openQuizSetup() {
-    const setupSection = document.getElementById("quizSetupSection");
-    if (setupSection) {
-        setupSection.style.display = "block";
-        setupSection.scrollIntoView({ behavior: "smooth" });
-    }
+function hideAllSections() {
+    const sections = ["quizSetupSection", "quizDashboard", "resultSection", "reviewSection", "weakReviewSection"];
+    sections.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = "none";
+    });
 }
 
 /**
- * Utility: Fisher-Yates Shuffle Algorithm for Randomization
+ * Fisher-Yates Array Shuffle
  */
 function shuffleArray(array) {
     const arr = [...array];
@@ -143,16 +142,15 @@ function shuffleArray(array) {
 function startQuiz(event) {
     if (event) event.preventDefault();
 
-    // 1. Validate Form Inputs
     const nameInput = document.getElementById("setupPlayerName");
     const catSelect = document.getElementById("setupCategory");
     const diffSelect = document.getElementById("setupDifficulty");
     const countSelect = document.getElementById("setupCount");
     const timerSelect = document.getElementById("setupTimer");
 
-    const playerName = nameInput ? nameInput.value.trim() : "";
+    const playerName = nameInput ? nameInput.value.trim() : "Developer";
     if (!playerName) {
-        alert("Please enter your name to start the quiz.");
+        alert("Please enter your name to start the test.");
         if (nameInput) nameInput.focus();
         return;
     }
@@ -162,45 +160,41 @@ function startQuiz(event) {
     const count = countSelect ? parseInt(countSelect.value, 10) : 10;
     const timerVal = timerSelect ? timerSelect.value : "300";
 
-    // 2. Fetch Raw Question Pool for Selected Category
+    // Fetch Question Pool
     const pool = QUESTION_DATABASE[catKey] || QUESTION_DATABASE.java;
-
-    // Filter by difficulty if available, else fallback to full pool
     let filtered = pool.filter(q => q.difficulty === difficulty);
     if (filtered.length < 3) filtered = pool;
 
-    // 3. Randomize Question Order
     let randomized = shuffleArray(filtered);
-    if (randomized.length > count) {
-        randomized = randomized.slice(0, count);
-    }
+    if (randomized.length > count) randomized = randomized.slice(0, count);
 
-    // 4. Randomize Option Orders while preserving correct index
+    // Randomize option order while preserving correct answer mapping
     const processedQuestions = randomized.map(q => {
-        const originalCorrectText = q.options[q.correct];
+        const correctText = q.options[q.correct];
         const shuffledOptions = shuffleArray(q.options);
-        const newCorrectIndex = shuffledOptions.indexOf(originalCorrectText);
+        const newCorrectIdx = shuffledOptions.indexOf(correctText);
 
         return {
             ...q,
             options: shuffledOptions,
-            correct: newCorrectIndex
+            correct: newCorrectIdx
         };
     });
 
-    // 5. Populate State
+    // Reset Quiz State
     QuizState.playerName = playerName;
     QuizState.categoryKey = catKey;
-    QuizState.categoryName = CATEGORY_NAMES[catKey] || "General Quiz";
+    QuizState.categoryName = CATEGORY_NAMES[catKey] || "Technical Quiz";
     QuizState.difficulty = difficulty;
     QuizState.questionLimit = processedQuestions.length;
     QuizState.questions = processedQuestions;
     QuizState.currentIndex = 0;
     QuizState.userAnswers = {};
+    QuizState.markedForReview = {};
+    QuizState.hintsUsed = {};
     QuizState.isSubmitted = false;
     QuizState.startTime = new Date();
 
-    // Timer Setup
     if (timerVal === "none") {
         QuizState.timeLimitSeconds = null;
         QuizState.remainingSeconds = null;
@@ -209,34 +203,92 @@ function startQuiz(event) {
         QuizState.remainingSeconds = QuizState.timeLimitSeconds;
     }
 
-    // 6. UI View Toggle
-    document.getElementById("quizSetupSection").style.display = "none";
-    document.getElementById("resultSection").style.display = "none";
-    document.getElementById("reviewSection").style.display = "none";
-    
-    const dashboard = document.getElementById("quizDashboard");
-    dashboard.style.display = "block";
-    dashboard.scrollIntoView({ behavior: "smooth" });
+    hideAllSections();
 
-    // 7. Initialize Timer & Render First Question
+    const dashboard = document.getElementById("quizDashboard");
+    if (dashboard) {
+        dashboard.style.display = "block";
+        dashboard.scrollIntoView({ behavior: "smooth" });
+    }
+
     startTimer();
     renderCurrentQuestion();
     renderQuestionPalette();
-    updateDashboardHeader();
 }
 
 /**
- * Timer Engine
+ * Start Targeted Weak Questions Practice Session
+ */
+function startWeakPractice() {
+    const weakTopics = StorageEngine.getWeakTopics();
+    if (weakTopics.length === 0) {
+        alert("Great job! You currently have no weak questions tracked. Take a new quiz to test your skills!");
+        return;
+    }
+
+    // Build question pool from weak topics
+    const weakQuestionIds = weakTopics.map(t => t.id);
+    const allQuestions = [];
+    Object.keys(QUESTION_DATABASE).forEach(cat => {
+        allQuestions.push(...QUESTION_DATABASE[cat]);
+    });
+
+    const weakQuestionsPool = allQuestions.filter(q => weakQuestionIds.includes(q.id));
+    if (weakQuestionsPool.length === 0) {
+        alert("No specific weak questions found. Starting general practice quiz.");
+        startQuiz();
+        return;
+    }
+
+    const processedQuestions = shuffleArray(weakQuestionsPool).map(q => {
+        const correctText = q.options[q.correct];
+        const shuffledOptions = shuffleArray(q.options);
+        const newCorrectIdx = shuffledOptions.indexOf(correctText);
+        return {
+            ...q,
+            options: shuffledOptions,
+            correct: newCorrectIdx
+        };
+    });
+
+    QuizState.playerName = StorageEngine.getPlayerName();
+    QuizState.categoryKey = "weak_practice";
+    QuizState.categoryName = "Targeted Weak Practice";
+    QuizState.difficulty = "Adaptive";
+    QuizState.questionLimit = processedQuestions.length;
+    QuizState.questions = processedQuestions;
+    QuizState.currentIndex = 0;
+    QuizState.userAnswers = {};
+    QuizState.markedForReview = {};
+    QuizState.hintsUsed = {};
+    QuizState.isSubmitted = false;
+    QuizState.startTime = new Date();
+    QuizState.timeLimitSeconds = 300;
+    QuizState.remainingSeconds = 300;
+
+    hideAllSections();
+    const dashboard = document.getElementById("quizDashboard");
+    if (dashboard) {
+        dashboard.style.display = "block";
+        dashboard.scrollIntoView({ behavior: "smooth" });
+    }
+
+    startTimer();
+    renderCurrentQuestion();
+    renderQuestionPalette();
+}
+
+/**
+ * Countdown Timer Engine
  */
 function startTimer() {
     clearInterval(QuizState.timerInterval);
-
-    const timerBadge = document.getElementById("dashTimerBadge");
-    if (!timerBadge) return;
+    const badge = document.getElementById("dashTimerBadge");
+    if (!badge) return;
 
     if (QuizState.remainingSeconds === null) {
-        timerBadge.textContent = "⏱️ No Timer";
-        timerBadge.className = "badge badge-info";
+        badge.textContent = "⏱️ No Timer";
+        badge.className = "badge badge-info";
         return;
     }
 
@@ -244,7 +296,6 @@ function startTimer() {
 
     QuizState.timerInterval = setInterval(() => {
         QuizState.remainingSeconds--;
-
         updateTimerDisplay();
 
         if (QuizState.remainingSeconds <= 0) {
@@ -256,52 +307,39 @@ function startTimer() {
 }
 
 function updateTimerDisplay() {
-    const timerBadge = document.getElementById("dashTimerBadge");
-    if (!timerBadge || QuizState.remainingSeconds === null) return;
+    const badge = document.getElementById("dashTimerBadge");
+    if (!badge || QuizState.remainingSeconds === null) return;
 
     const mins = Math.floor(QuizState.remainingSeconds / 60);
     const secs = QuizState.remainingSeconds % 60;
     const formatted = `⏱️ ${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 
-    timerBadge.textContent = formatted;
+    badge.textContent = formatted;
 
-    // Low time warning (< 60s)
     if (QuizState.remainingSeconds <= 60) {
-        timerBadge.className = "badge badge-danger timer-warning";
+        badge.className = "badge badge-danger timer-warning";
     } else {
-        timerBadge.className = "badge badge-info";
+        badge.className = "badge badge-info";
     }
 }
 
 /**
- * Header Meta Updates
- */
-function updateDashboardHeader() {
-    document.getElementById("dashPlayerName").textContent = QuizState.playerName;
-    document.getElementById("dashCategory").textContent = QuizState.categoryName;
-    document.getElementById("dashDifficulty").textContent = QuizState.difficulty;
-    
-    const qCount = QuizState.questions.length;
-    const answeredCount = Object.keys(QuizState.userAnswers).length;
-
-    document.getElementById("dashProgressText").textContent = `Question ${QuizState.currentIndex + 1} of ${qCount}`;
-    
-    const fillPercent = ((QuizState.currentIndex + 1) / qCount) * 100;
-    document.getElementById("dashProgressBarFill").style.width = `${fillPercent}%`;
-}
-
-/**
- * Render Current Active Question
+ * Render Active Question & Options
  */
 function renderCurrentQuestion() {
     const q = QuizState.questions[QuizState.currentIndex];
     if (!q) return;
 
+    document.getElementById("dashPlayerName").textContent = QuizState.playerName;
+    document.getElementById("dashCategory").textContent = QuizState.categoryName;
+    document.getElementById("dashDifficulty").textContent = QuizState.difficulty;
+
     document.getElementById("qNumberBadge").textContent = `Question ${QuizState.currentIndex + 1} of ${QuizState.questions.length}`;
     document.getElementById("qText").textContent = q.question;
 
-    const optionsGrid = document.getElementById("qOptionsGrid");
-    optionsGrid.innerHTML = "";
+    // Render Options
+    const grid = document.getElementById("qOptionsGrid");
+    grid.innerHTML = "";
 
     const selectedIdx = QuizState.userAnswers[q.id];
 
@@ -318,10 +356,39 @@ function renderCurrentQuestion() {
             <span class="option-text-val">${optText}</span>
         `;
 
-        optionsGrid.appendChild(label);
+        grid.appendChild(label);
     });
 
-    // Update Navigation Buttons
+    // Mark for Review Button State
+    const markBtn = document.getElementById("markReviewBtn");
+    const isMarked = QuizState.markedForReview[q.id];
+    if (markBtn) {
+        if (isMarked) {
+            markBtn.className = "btn btn-warning";
+            markBtn.innerHTML = "🔖 Marked for Review";
+        } else {
+            markBtn.className = "btn btn-outline";
+            markBtn.innerHTML = "🔖 Mark for Review";
+        }
+    }
+
+    // Hint Card Handling
+    const hintCard = document.getElementById("qHintCard");
+    const hintText = document.getElementById("qHintText");
+    const hintBtn = document.getElementById("toggleHintBtn");
+
+    if (hintCard && hintText) {
+        hintText.textContent = q.hint || "Think carefully about the core concepts of this topic.";
+        if (QuizState.hintsUsed[q.id]) {
+            hintCard.style.display = "block";
+            if (hintBtn) hintBtn.textContent = "💡 Hide Hint";
+        } else {
+            hintCard.style.display = "none";
+            if (hintBtn) hintBtn.textContent = "💡 Need a Hint?";
+        }
+    }
+
+    // Navigation Buttons State
     const prevBtn = document.getElementById("prevQBtn");
     const nextBtn = document.getElementById("nextQBtn");
     const submitBtn = document.getElementById("submitQuizBtn");
@@ -336,12 +403,23 @@ function renderCurrentQuestion() {
         if (submitBtn) submitBtn.style.display = "inline-flex";
     }
 
-    updateDashboardHeader();
+    // Header Progress Bar & Side Panel Counters
+    const qCount = QuizState.questions.length;
+    const answeredCount = Object.keys(QuizState.userAnswers).length;
+    const unansweredCount = qCount - answeredCount;
+
+    document.getElementById("dashProgressText").textContent = `Question ${QuizState.currentIndex + 1} of ${qCount}`;
+    document.getElementById("dashProgressBarFill").style.width = `${((QuizState.currentIndex + 1) / qCount) * 100}%`;
+
+    document.getElementById("sideAnsweredCount").textContent = answeredCount;
+    document.getElementById("sideUnansweredCount").textContent = unansweredCount;
+    document.getElementById("sideMarkedCount").textContent = Object.values(QuizState.markedForReview).filter(Boolean).length;
+
     renderQuestionPalette();
 }
 
 /**
- * Select Option Handler
+ * Option Select Handler
  */
 function selectOption(questionId, optionIndex) {
     QuizState.userAnswers[questionId] = optionIndex;
@@ -349,7 +427,29 @@ function selectOption(questionId, optionIndex) {
 }
 
 /**
- * Question Palette Render & Click Handler
+ * Toggle Pre-submission Hint
+ */
+function toggleHint() {
+    const q = QuizState.questions[QuizState.currentIndex];
+    if (!q) return;
+
+    QuizState.hintsUsed[q.id] = !QuizState.hintsUsed[q.id];
+    renderCurrentQuestion();
+}
+
+/**
+ * Toggle Mark for Review State
+ */
+function toggleMarkForReview() {
+    const q = QuizState.questions[QuizState.currentIndex];
+    if (!q) return;
+
+    QuizState.markedForReview[q.id] = !QuizState.markedForReview[q.id];
+    renderCurrentQuestion();
+}
+
+/**
+ * Render Question Palette (4 States: Current, Answered, Unanswered, Marked)
  */
 function renderQuestionPalette() {
     const palette = document.getElementById("questionPalette");
@@ -363,9 +463,11 @@ function renderQuestionPalette() {
 
         const isCurrent = index === QuizState.currentIndex;
         const isAnswered = QuizState.userAnswers.hasOwnProperty(q.id);
+        const isMarked = QuizState.markedForReview[q.id];
 
         let className = "palette-btn";
         if (isCurrent) className += " current";
+        else if (isMarked) className += " marked";
         else if (isAnswered) className += " answered";
         else className += " unanswered";
 
@@ -397,7 +499,7 @@ function prevQuestion() {
 }
 
 /**
- * Submit Quiz & Calculate Results
+ * Submit Quiz & Generate Comprehensive Analytics
  */
 function submitQuiz() {
     if (QuizState.isSubmitted) return;
@@ -407,17 +509,16 @@ function submitQuiz() {
     const endTime = new Date();
     const timeTakenSeconds = Math.round((endTime - QuizState.startTime) / 1000);
 
-    // Score Calculations
     let correctAnswers = 0;
     let wrongAnswers = 0;
     let unanswered = 0;
     const totalQuestions = QuizState.questions.length;
 
     QuizState.questions.forEach(q => {
-        const userChoice = QuizState.userAnswers[q.id];
-        if (userChoice === undefined) {
+        const choice = QuizState.userAnswers[q.id];
+        if (choice === undefined) {
             unanswered++;
-        } else if (userChoice === q.correct) {
+        } else if (choice === q.correct) {
             correctAnswers++;
         } else {
             wrongAnswers++;
@@ -428,46 +529,28 @@ function submitQuiz() {
     const percentage = parseFloat(((correctAnswers / totalQuestions) * 100).toFixed(1));
     const accuracy = parseFloat(((correctAnswers / (correctAnswers + wrongAnswers || 1)) * 100).toFixed(1));
 
-    // Performance Feedback Message
+    // Performance Feedback & Message
     let feedback = "";
     let badgeClass = "badge-success";
     if (percentage >= 90) {
-        feedback = "🌟 Outstanding Performance! Exceptional Knowledge!";
+        feedback = "🌟 Outstanding Performance! Exceptional Mastery!";
         badgeClass = "badge-success";
     } else if (percentage >= 70) {
-        feedback = "👍 Great Job! You passed with high accuracy!";
+        feedback = "👍 Great Job! Strong technical foundation!";
         badgeClass = "badge-info";
     } else if (percentage >= 50) {
-        feedback = "📚 Good Effort! Keep practicing to improve your score.";
+        feedback = "📚 Good Effort! Keep practicing to improve accuracy.";
         badgeClass = "badge-warning";
     } else {
-        feedback = "💪 Keep Practicing! Review the concepts and try again.";
+        feedback = "💪 Keep Practicing! Review key concepts and retry.";
         badgeClass = "badge-danger";
     }
 
-    // Format Time Taken string
     const mins = Math.floor(timeTakenSeconds / 60);
     const secs = timeTakenSeconds % 60;
     const timeTakenStr = `${mins}m ${secs}s`;
 
-    // 1. Update Result Dashboard UI
-    document.getElementById("resPlayerName").textContent = QuizState.playerName;
-    document.getElementById("resCategory").textContent = QuizState.categoryName;
-    document.getElementById("resDifficulty").textContent = QuizState.difficulty;
-    document.getElementById("resFeedback").textContent = feedback;
-    document.getElementById("resFeedbackBadge").className = `badge ${badgeClass}`;
-    
-    document.getElementById("resTotal").textContent = totalQuestions;
-    document.getElementById("resCorrect").textContent = correctAnswers;
-    document.getElementById("resWrong").textContent = wrongAnswers;
-    document.getElementById("resUnanswered").textContent = unanswered;
-    document.getElementById("resScore").textContent = `${score} / ${totalQuestions}`;
-    document.getElementById("resPercentage").textContent = `${percentage}%`;
-    document.getElementById("resAccuracy").textContent = `${accuracy}%`;
-    document.getElementById("resTimeTaken").textContent = timeTakenStr;
-    document.getElementById("resCircleProgress").style.strokeDashoffset = `${440 - (440 * percentage) / 100}`;
-
-    // 2. Save Attempt Data to LocalStorage
+    // Save Attempt to LocalStorage
     const attemptData = {
         id: Date.now(),
         playerName: QuizState.playerName,
@@ -481,26 +564,44 @@ function submitQuiz() {
         percentage: percentage,
         accuracy: accuracy,
         timeTaken: timeTakenStr,
-        date: new Date().toLocaleDateString()
+        date: new Date().toLocaleDateString(),
+        questions: QuizState.questions,
+        userAnswers: QuizState.userAnswers
     };
 
     StorageEngine.saveQuizAttempt(attemptData);
 
-    // 3. UI View Toggle
-    document.getElementById("quizDashboard").style.display = "none";
-    
-    const resultSection = document.getElementById("resultSection");
-    resultSection.style.display = "block";
-    resultSection.scrollIntoView({ behavior: "smooth" });
+    // Populate Results UI
+    document.getElementById("resPlayerName").textContent = QuizState.playerName;
+    document.getElementById("resCategory").textContent = QuizState.categoryName;
+    document.getElementById("resDifficulty").textContent = QuizState.difficulty;
+    document.getElementById("resFeedback").textContent = feedback;
+    document.getElementById("resFeedbackBadge").className = `badge ${badgeClass}`;
 
-    // Refresh History, Leaderboard, & Dashboard
+    document.getElementById("resTotal").textContent = totalQuestions;
+    document.getElementById("resCorrect").textContent = correctAnswers;
+    document.getElementById("resWrong").textContent = wrongAnswers;
+    document.getElementById("resUnanswered").textContent = unanswered;
+    document.getElementById("resScore").textContent = `${score} / ${totalQuestions}`;
+    document.getElementById("resPercentage").textContent = `${percentage}%`;
+    document.getElementById("resAccuracy").textContent = `${accuracy}%`;
+    document.getElementById("resTimeTaken").textContent = timeTakenStr;
+    document.getElementById("resCircleProgress").style.strokeDashoffset = `${440 - (440 * percentage) / 100}`;
+
+    hideAllSections();
+    const resultSection = document.getElementById("resultSection");
+    if (resultSection) {
+        resultSection.style.display = "block";
+        resultSection.scrollIntoView({ behavior: "smooth" });
+    }
+
+    renderDashboard();
     renderLeaderboard();
     renderHistory();
-    renderUserDashboard();
 }
 
 /**
- * Question Review Renderer
+ * Render Complete Question-by-Question Review with Step-by-Step Explanations
  */
 function reviewAnswers() {
     const container = document.getElementById("reviewQuestionsList");
@@ -519,68 +620,196 @@ function reviewAnswers() {
         let statusBadge = '';
         if (isCorrect) statusBadge = '<span class="badge badge-success">✓ Correct</span>';
         else if (isUnanswered) statusBadge = '<span class="badge badge-warning">⚠️ Unanswered</span>';
-        else statusBadge = '<span class="badge badge-danger">✗ Incorrect</span>';
+        else statusBadge = '<span class="badge badge-danger">✕ Incorrect</span>';
+
+        const userChoiceText = userChoice !== undefined ? `${String.fromCharCode(65 + userChoice)}) ${q.options[userChoice]}` : "None (Unanswered)";
+        const correctChoiceText = `${String.fromCharCode(65 + q.correct)}) ${q.options[q.correct]}`;
 
         card.innerHTML = `
             <div class="review-header">
                 <span class="question-number">Question ${index + 1} of ${QuizState.questions.length}</span>
                 ${statusBadge}
             </div>
-            <h4 class="review-question-text">${q.question}</h4>
-            <div class="review-options-list">
-                ${q.options.map((optText, optIdx) => {
-                    let optClass = "review-opt";
-                    if (optIdx === q.correct) optClass += " is-correct-ans";
-                    if (optIdx === userChoice && !isCorrect) optClass += " is-wrong-ans";
+            
+            <h4 class="review-q-title">${q.question}</h4>
 
-                    return `
-                        <div class="${optClass}">
-                            <span class="option-prefix">${String.fromCharCode(65 + optIdx)}</span>
-                            <span>${optText}</span>
-                            ${optIdx === q.correct ? ' <strong style="margin-left: auto; color: var(--success-color);">(Correct Answer)</strong>' : ''}
-                            ${optIdx === userChoice && !isCorrect ? ' <strong style="margin-left: auto; color: var(--danger-color);">(Your Selection)</strong>' : ''}
-                        </div>
-                    `;
-                }).join('')}
+            <div class="user-vs-correct-grid">
+                <div class="ans-box ${isCorrect ? 'user-correct' : 'user-wrong'}">
+                    <span class="ans-label">❌ Your Answer:</span>
+                    <strong>${userChoiceText}</strong>
+                </div>
+                <div class="ans-box correct">
+                    <span class="ans-label">✅ Correct Answer:</span>
+                    <strong>${correctChoiceText}</strong>
+                </div>
+            </div>
+
+            <!-- Deep Learning Breakdown Cards -->
+            <div class="explanation-details-box">
+                <div class="exp-block">
+                    <span class="exp-badge">🧠 WHY?</span>
+                    <p>${q.explanation || "The correct option matches the fundamental specification of this topic."}</p>
+                </div>
+
+                ${q.solution && q.solution.length > 0 ? `
+                    <div class="exp-block">
+                        <span class="exp-badge">⚙️ HOW TO SOLVE (Step-by-Step):</span>
+                        <ul class="solution-steps-list">
+                            ${q.solution.map(step => `<li>${step}</li>`).join('')}
+                        </ul>
+                    </div>
+                ` : ''}
+
+                <div class="exp-block">
+                    <span class="exp-badge">📚 CONCEPT TO REMEMBER:</span>
+                    <p><strong>${q.concept || q.category}</strong></p>
+                </div>
+
+                ${q.quickTip ? `
+                    <div class="exp-block">
+                        <span class="exp-badge">💡 QUICK TIP:</span>
+                        <p>${q.quickTip}</p>
+                    </div>
+                ` : ''}
             </div>
         `;
 
         container.appendChild(card);
     });
 
-    document.getElementById("resultSection").style.display = "none";
-    
+    hideAllSections();
     const reviewSec = document.getElementById("reviewSection");
-    reviewSec.style.display = "block";
-    reviewSec.scrollIntoView({ behavior: "smooth" });
-}
-
-function backToResults() {
-    document.getElementById("reviewSection").style.display = "none";
-    const resSec = document.getElementById("resultSection");
-    resSec.style.display = "block";
-    resSec.scrollIntoView({ behavior: "smooth" });
+    if (reviewSec) {
+        reviewSec.style.display = "block";
+        reviewSec.scrollIntoView({ behavior: "smooth" });
+    }
 }
 
 /**
- * Render Local Leaderboard UI
+ * Render Dedicated "Questions to Review" (Only Incorrect Answers)
+ */
+function reviewWrongAnswersOnly() {
+    const container = document.getElementById("weakReviewList");
+    if (!container) return;
+
+    container.innerHTML = "";
+
+    const wrongQuestions = QuizState.questions.filter(q => {
+        const userChoice = QuizState.userAnswers[q.id];
+        return userChoice === undefined || userChoice !== q.correct;
+    });
+
+    if (wrongQuestions.length === 0) {
+        container.innerHTML = `
+            <div class="card" style="text-align: center; padding: 2.5rem;">
+                <h3>🎉 Perfect Score! No wrong answers to review.</h3>
+            </div>
+        `;
+    } else {
+        wrongQuestions.forEach((q, index) => {
+            const userChoice = QuizState.userAnswers[q.id];
+            const card = document.createElement("div");
+            card.className = "review-card wrong";
+
+            card.innerHTML = `
+                <div class="review-header">
+                    <span class="badge badge-danger">❌ Question to Review #${index + 1}</span>
+                    <span class="badge badge-info">${q.category}</span>
+                </div>
+
+                <h4 class="review-q-title">${q.question}</h4>
+
+                <div class="user-vs-correct-grid">
+                    <div class="ans-box user-wrong">
+                        <span class="ans-label">Your Selection:</span>
+                        <strong>${userChoice !== undefined ? q.options[userChoice] : "Unanswered"}</strong>
+                    </div>
+                    <div class="ans-box correct">
+                        <span class="ans-label">Correct Answer:</span>
+                        <strong>${q.options[q.correct]}</strong>
+                    </div>
+                </div>
+
+                <div class="explanation-details-box">
+                    <div class="exp-block">
+                        <span class="exp-badge">💡 Hint Clue:</span>
+                        <p>${q.hint}</p>
+                    </div>
+                    <div class="exp-block">
+                        <span class="exp-badge">🧠 Why your answer was incorrect:</span>
+                        <p>${q.explanation}</p>
+                    </div>
+                    <div class="exp-block">
+                        <span class="exp-badge">📚 Core Concept:</span>
+                        <p>${q.concept}</p>
+                    </div>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    hideAllSections();
+    const weakSec = document.getElementById("weakReviewSection");
+    if (weakSec) {
+        weakSec.style.display = "block";
+        weakSec.scrollIntoView({ behavior: "smooth" });
+    }
+}
+
+function backToResults() {
+    hideAllSections();
+    const resSec = document.getElementById("resultSection");
+    if (resSec) {
+        resSec.style.display = "block";
+        resSec.scrollIntoView({ behavior: "smooth" });
+    }
+}
+
+/**
+ * Render User Profile Dashboard & Performance Summary
+ */
+function renderDashboard() {
+    const stats = StorageEngine.getUserDashboardStats();
+    
+    document.getElementById("userWelcomeHeader").textContent = `Welcome back, ${stats.playerName}`;
+    document.getElementById("userDashCompleted").textContent = stats.quizzesCompleted;
+    document.getElementById("userDashBest").textContent = stats.bestScore;
+    document.getElementById("userDashAvg").textContent = `${stats.avgPercentage}%`;
+    document.getElementById("userDashAttempted").textContent = stats.totalAttempted;
+    document.getElementById("userDashAccuracy").textContent = `${stats.accuracy}%`;
+
+    // Strong vs Needs Improvement Topics
+    const strongList = document.getElementById("dashStrongTopics");
+    if (strongList) {
+        strongList.innerHTML = stats.strongCategories.map(c => `<span class="badge badge-success">✓ ${c}</span>`).join(' ');
+    }
+
+    const weakList = document.getElementById("dashWeakTopics");
+    if (weakList) {
+        weakList.innerHTML = stats.weakCategories.map(c => `<span class="badge badge-danger">⚠️ ${c}</span>`).join(' ');
+    }
+}
+
+/**
+ * Render Leaderboard
  */
 function renderLeaderboard() {
     const list = StorageEngine.getLeaderboard();
-    const tableBody = document.getElementById("leaderboardTableBody");
+    const tbody = document.getElementById("leaderboardTableBody");
     const top3Container = document.getElementById("top3Container");
 
-    if (!tableBody || !top3Container) return;
+    if (!tbody || !top3Container) return;
 
-    // Render Top 3 Cards
+    // Top 3 Podium
     top3Container.innerHTML = "";
     const ranks = ["🥇 1st Place", "🥈 2nd Place", "🥉 3rd Place"];
 
-    list.slice(0, 3).forEach((item, index) => {
+    list.slice(0, 3).forEach((item, idx) => {
         const card = document.createElement("div");
-        card.className = `top-player-card rank-${index + 1}`;
+        card.className = `top-player-card rank-${idx + 1}`;
         card.innerHTML = `
-            <span class="rank-badge">${ranks[index]}</span>
+            <span class="rank-badge">${ranks[idx]}</span>
             <h4 class="player-name">${item.name}</h4>
             <div class="player-score">${item.score} / ${item.total || 10} (${item.percentage}%)</div>
             <div class="player-meta">${item.category} • ${item.difficulty}</div>
@@ -588,12 +817,12 @@ function renderLeaderboard() {
         top3Container.appendChild(card);
     });
 
-    // Render Table Rows
-    tableBody.innerHTML = "";
-    list.forEach((item, index) => {
+    // Table Rows
+    tbody.innerHTML = "";
+    list.forEach((item, idx) => {
         const row = document.createElement("tr");
         row.innerHTML = `
-            <td><strong>#${index + 1}</strong></td>
+            <td><strong>#${idx + 1}</strong></td>
             <td><strong>${item.name}</strong></td>
             <td>${item.category}</td>
             <td><span class="badge badge-info">${item.difficulty}</span></td>
@@ -601,12 +830,12 @@ function renderLeaderboard() {
             <td><strong style="color: var(--accent-blue);">${item.percentage}%</strong></td>
             <td>${item.date || 'Recent'}</td>
         `;
-        tableBody.appendChild(row);
+        tbody.appendChild(row);
     });
 }
 
 /**
- * Render Quiz History UI
+ * Render Quiz History
  */
 function renderHistory() {
     const history = StorageEngine.getHistory();
@@ -643,26 +872,8 @@ function renderHistory() {
 function clearUserHistory() {
     if (confirm("Are you sure you want to clear your entire quiz history and reset leaderboard?")) {
         StorageEngine.clearHistory();
+        renderDashboard();
         renderHistory();
         renderLeaderboard();
-        renderUserDashboard();
     }
-}
-
-/**
- * Render User Profile Dashboard Stats
- */
-function renderUserDashboard() {
-    const lastName = StorageEngine.getLastPlayerName();
-    const stats = StorageEngine.getUserDashboardStats(lastName);
-
-    const nameElem = document.getElementById("userDashName");
-    if (nameElem) {
-        nameElem.textContent = lastName ? `Player Profile: ${lastName}` : "Your Quiz Profile Summary";
-    }
-
-    document.getElementById("userTotalCompleted").textContent = stats.quizzesCompleted;
-    document.getElementById("userBestScore").textContent = stats.bestScore;
-    document.getElementById("userAvgPercentage").textContent = `${stats.avgPercentage}%`;
-    document.getElementById("userTotalCorrect").textContent = stats.totalCorrect;
 }

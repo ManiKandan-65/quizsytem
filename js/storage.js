@@ -1,34 +1,44 @@
 /* ==========================================================================
-   QuizSystem - LocalStorage Engine
-   Manages Theme preferences, Quiz History, Local Leaderboard, & User Dashboard
+   QuizSystem - LocalStorage & State Management Engine
+   Manages:
+   - Theme preferences (Dark Mode by default)
+   - Quiz attempt history & detailed question records
+   - User Dashboard analytics
+   - Weak topics tracking for targeted practice sessions
+   - Local Leaderboard
    ========================================================================== */
 
 const STORAGE_KEYS = {
     THEME: 'quizsystem_theme',
     HISTORY: 'quizsystem_history',
     LEADERBOARD: 'quizsystem_leaderboard',
-    PLAYER_NAME: 'quizsystem_last_player'
+    PLAYER_NAME: 'quizsystem_player_name',
+    WEAK_TOPICS: 'quizsystem_weak_topics'
 };
 
-// Initial Sample Leaderboard Data if no user data exists yet
+// Initial Sample Leaderboard Data for cold start
 const SAMPLE_LEADERBOARD = [
-    { name: "Alex Chen", category: "Java", difficulty: "Hard", score: 10, total: 10, percentage: 100.0, date: "2026-09-20" },
-    { name: "Priya Sharma", category: "JavaScript", difficulty: "Medium", score: 9, total: 10, percentage: 90.0, date: "2026-09-21" },
-    { name: "David Miller", category: "HTML & CSS", difficulty: "Medium", score: 8, total: 10, percentage: 80.0, date: "2026-09-22" },
-    { name: "Sara Khan", category: "DBMS", difficulty: "Easy", score: 8, total: 10, percentage: 80.0, date: "2026-09-23" },
-    { name: "Rahul Verma", category: "OOP", difficulty: "Medium", score: 7, total: 10, percentage: 70.0, date: "2026-09-24" }
+    { name: "Alex Chen", category: "Java", difficulty: "Hard", score: 5, total: 5, percentage: 100.0, date: "2026-09-20" },
+    { name: "Priya Sharma", category: "JavaScript", difficulty: "Medium", score: 4, total: 5, percentage: 80.0, date: "2026-09-21" },
+    { name: "David Miller", category: "HTML & CSS", difficulty: "Medium", score: 4, total: 5, percentage: 80.0, date: "2026-09-22" },
+    { name: "Sara Khan", category: "DBMS", difficulty: "Easy", score: 3, total: 5, percentage: 60.0, date: "2026-09-23" },
+    { name: "Rahul Verma", category: "OOP", difficulty: "Medium", score: 3, total: 5, percentage: 60.0, date: "2026-09-24" }
 ];
 
 const StorageEngine = {
     /**
-     * Theme Preference Management
+     * Theme Preference (Dark mode is default as per prompt)
      */
     getTheme() {
-        return localStorage.getItem(STORAGE_KEYS.THEME) || 'light';
+        return localStorage.getItem(STORAGE_KEYS.THEME) || 'dark';
     },
 
     setTheme(theme) {
-        localStorage.setItem(STORAGE_KEYS.THEME, theme);
+        try {
+            localStorage.setItem(STORAGE_KEYS.THEME, theme);
+        } catch (e) {
+            console.warn("LocalStorage access error:", e);
+        }
         document.documentElement.setAttribute('data-theme', theme);
     },
 
@@ -39,34 +49,20 @@ const StorageEngine = {
     },
 
     /**
-     * Last Used Player Name
+     * Player Name Memory
      */
-    getLastPlayerName() {
-        return localStorage.getItem(STORAGE_KEYS.PLAYER_NAME) || '';
+    getPlayerName() {
+        return localStorage.getItem(STORAGE_KEYS.PLAYER_NAME) || 'Developer';
     },
 
-    setLastPlayerName(name) {
-        if (name) localStorage.setItem(STORAGE_KEYS.PLAYER_NAME, name);
+    setPlayerName(name) {
+        if (name && name.trim()) {
+            localStorage.setItem(STORAGE_KEYS.PLAYER_NAME, name.trim());
+        }
     },
 
     /**
-     * Save completed quiz attempt to History & update Leaderboard
-     */
-    saveQuizAttempt(attemptData) {
-        // 1. Save to History
-        const history = this.getHistory();
-        history.unshift(attemptData); // Add latest attempt at beginning
-        localStorage.setItem(STORAGE_KEYS.HISTORY, JSON.stringify(history));
-
-        // 2. Save Last Used Player Name
-        this.setLastPlayerName(attemptData.playerName);
-
-        // 3. Update Local Leaderboard
-        this.updateLeaderboard(attemptData);
-    },
-
-    /**
-     * Get all History attempts
+     * Quiz History Storage
      */
     getHistory() {
         try {
@@ -78,43 +74,77 @@ const StorageEngine = {
         }
     },
 
-    /**
-     * Clear all History & reset Leaderboard
-     */
+    saveQuizAttempt(attemptData) {
+        const history = this.getHistory();
+        history.unshift(attemptData); // latest first
+        
+        try {
+            localStorage.setItem(STORAGE_KEYS.HISTORY, JSON.stringify(history));
+        } catch (e) {
+            console.warn("History storage limit reached", e);
+        }
+
+        this.setPlayerName(attemptData.playerName);
+        this.updateLeaderboard(attemptData);
+        this.trackWeakTopics(attemptData);
+    },
+
+    getAttemptById(attemptId) {
+        const history = this.getHistory();
+        return history.find(item => item.id == attemptId) || null;
+    },
+
     clearHistory() {
         localStorage.removeItem(STORAGE_KEYS.HISTORY);
         localStorage.removeItem(STORAGE_KEYS.LEADERBOARD);
+        localStorage.removeItem(STORAGE_KEYS.WEAK_TOPICS);
     },
 
     /**
-     * Update Leaderboard with new entry and sort by Score/Percentage
+     * Track Weak Topics & Incorrect Questions
      */
-    updateLeaderboard(attemptData) {
-        let leaderboard = this.getLeaderboard();
+    trackWeakTopics(attemptData) {
+        if (!attemptData.questions || !attemptData.userAnswers) return;
 
-        const entry = {
-            name: attemptData.playerName,
-            category: attemptData.category,
-            difficulty: attemptData.difficulty,
-            score: attemptData.score,
-            total: attemptData.totalQuestions,
-            percentage: parseFloat(attemptData.percentage),
-            date: attemptData.date
-        };
+        let weakTopics = this.getWeakTopics();
 
-        leaderboard.push(entry);
+        attemptData.questions.forEach(q => {
+            const userChoice = attemptData.userAnswers[q.id];
+            if (userChoice === undefined || userChoice !== q.correct) {
+                // Topic/Question was incorrect or unanswered
+                if (!weakTopics.some(item => item.id === q.id)) {
+                    weakTopics.push({
+                        id: q.id,
+                        category: q.category,
+                        question: q.question,
+                        difficulty: q.difficulty,
+                        date: new Date().toLocaleDateString()
+                    });
+                }
+            } else {
+                // If answered correctly in latest attempt, remove from weak list
+                weakTopics = weakTopics.filter(item => item.id !== q.id);
+            }
+        });
 
-        // Sort descending by percentage, then by score
-        leaderboard.sort((a, b) => b.percentage - a.percentage || b.score - a.score);
+        try {
+            localStorage.setItem(STORAGE_KEYS.WEAK_TOPICS, JSON.stringify(weakTopics));
+        } catch (e) {
+            console.warn("Error saving weak topics", e);
+        }
+    },
 
-        // Keep top 20 entries
-        leaderboard = leaderboard.slice(0, 20);
-
-        localStorage.setItem(STORAGE_KEYS.LEADERBOARD, JSON.stringify(leaderboard));
+    getWeakTopics() {
+        try {
+            const data = localStorage.getItem(STORAGE_KEYS.WEAK_TOPICS);
+            return data ? JSON.parse(data) : [];
+        } catch (e) {
+            return [];
+        }
     },
 
     /**
-     * Get Leaderboard entries (returns sample fallback if empty)
+     * Local Leaderboard Management
      */
     getLeaderboard() {
         try {
@@ -129,48 +159,96 @@ const StorageEngine = {
         }
     },
 
-    /**
-     * Compute aggregated User Dashboard metrics from LocalStorage
-     */
-    getUserDashboardStats(playerName) {
-        const history = this.getHistory();
-        
-        // Filter history by player name if provided, else compute overall user stats
-        const userHistory = playerName ? history.filter(h => h.playerName.toLowerCase() === playerName.toLowerCase()) : history;
+    updateLeaderboard(attemptData) {
+        let leaderboard = this.getLeaderboard();
 
-        if (userHistory.length === 0) {
+        const entry = {
+            name: attemptData.playerName,
+            category: attemptData.category,
+            difficulty: attemptData.difficulty,
+            score: attemptData.score,
+            total: attemptData.totalQuestions,
+            percentage: parseFloat(attemptData.percentage),
+            date: attemptData.date
+        };
+
+        leaderboard.push(entry);
+        leaderboard.sort((a, b) => b.percentage - a.percentage || b.score - a.score);
+        leaderboard = leaderboard.slice(0, 15);
+
+        try {
+            localStorage.setItem(STORAGE_KEYS.LEADERBOARD, JSON.stringify(leaderboard));
+        } catch (e) {
+            console.warn("Leaderboard save error", e);
+        }
+    },
+
+    /**
+     * Dashboard Analytics Aggregator
+     */
+    getUserDashboardStats() {
+        const history = this.getHistory();
+        const playerName = this.getPlayerName();
+
+        if (history.length === 0) {
             return {
+                playerName,
                 quizzesCompleted: 0,
                 bestScore: 0,
-                avgPercentage: 0.0,
+                avgPercentage: "0.0",
+                totalAttempted: 0,
                 totalCorrect: 0,
-                totalAttempted: 0
+                accuracy: "0.0",
+                strongCategories: [],
+                weakCategories: []
             };
         }
 
-        const quizzesCompleted = userHistory.length;
-        let totalScoreSum = 0;
+        const quizzesCompleted = history.length;
         let bestScore = 0;
         let percentageSum = 0;
-        let totalCorrect = 0;
         let totalAttempted = 0;
+        let totalCorrect = 0;
 
-        userHistory.forEach(h => {
-            totalScoreSum += h.score;
+        const categoryStats = {};
+
+        history.forEach(h => {
             if (h.score > bestScore) bestScore = h.score;
             percentageSum += parseFloat(h.percentage);
-            totalCorrect += h.correctAnswers;
             totalAttempted += h.totalQuestions;
+            totalCorrect += h.correctAnswers;
+
+            // Track per-category stats
+            if (!categoryStats[h.category]) {
+                categoryStats[h.category] = { correct: 0, total: 0 };
+            }
+            categoryStats[h.category].correct += h.correctAnswers;
+            categoryStats[h.category].total += h.totalQuestions;
         });
 
         const avgPercentage = (percentageSum / quizzesCompleted).toFixed(1);
+        const accuracy = totalAttempted > 0 ? ((totalCorrect / totalAttempted) * 100).toFixed(1) : "0.0";
+
+        // Identify Strong vs Weak Categories
+        const strongCategories = [];
+        const weakCategories = [];
+
+        Object.keys(categoryStats).forEach(cat => {
+            const catAcc = (categoryStats[cat].correct / categoryStats[cat].total) * 100;
+            if (catAcc >= 70) strongCategories.push(cat);
+            else weakCategories.push(cat);
+        });
 
         return {
+            playerName,
             quizzesCompleted,
             bestScore,
             avgPercentage,
+            totalAttempted,
             totalCorrect,
-            totalAttempted
+            accuracy,
+            strongCategories: strongCategories.length > 0 ? strongCategories : ["Java Basics"],
+            weakCategories: weakCategories.length > 0 ? weakCategories : ["Exception Handling"]
         };
     }
 };

@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QuizSystem - Challenge Your Knowledge</title>
-    <meta name="description" content="QuizSystem is an interactive online quiz platform designed to help users test their knowledge across programming and computer science topics.">
+    <title>QuizSystem - Advanced Learning & Assessment Platform</title>
+    <meta name="description" content="QuizSystem is an interactive learning and assessment platform that helps developers and students test their knowledge with real-time feedback, hints, and step-by-step solutions.">
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -17,9 +17,9 @@
             </a>
 
             <div style="display: flex; align-items: center; gap: 1rem;">
-                <!-- Theme Toggle Button -->
+                <!-- Theme Toggle Button (Dark Default) -->
                 <button type="button" class="theme-toggle-btn" id="themeToggleBtn" title="Toggle Dark/Light Mode">
-                    <span id="themeIcon">🌙</span>
+                    <span id="themeIcon">☀️</span>
                 </button>
 
                 <button class="hamburger" id="hamburger" aria-label="Toggle navigation menu">
@@ -30,6 +30,7 @@
             <nav>
                 <ul class="nav-menu" id="navMenu">
                     <li><a href="#home" class="nav-link">Home</a></li>
+                    <li><a href="#userDashboard" class="nav-link">Dashboard</a></li>
                     <li><a href="#categories" class="nav-link">Categories</a></li>
                     <li><a href="#leaderboard" class="nav-link">Leaderboard</a></li>
                     <li><a href="#history" class="nav-link">History</a></li>
@@ -46,10 +47,10 @@
     <section id="home" class="hero-section">
         <div class="hero-container">
             <div class="hero-content">
-                <span class="hero-badge">🚀 Modern Interactive Learning Platform</span>
+                <span class="hero-badge">⚡ Advanced Learning & Assessment Platform</span>
                 <h1 class="hero-title">Challenge Your <span>Knowledge</span></h1>
                 <p class="hero-subtitle">
-                    Learn. Practice. Compete. Improve. Test your skills in Java, JavaScript, Web Development, DBMS, OOP, and Computer Science with real-time feedback.
+                    Learn. Practice. Compete. Improve. Interactive quizzes with hints, step-by-step solutions, performance analytics, and weak-area practice.
                 </p>
 
                 <div class="hero-buttons">
@@ -64,7 +65,7 @@
                     </div>
                     <div class="stat-item">
                         <h4>6</h4>
-                        <p>Tech Categories</p>
+                        <p>Categories</p>
                     </div>
                     <div class="stat-item">
                         <h4>3</h4>
@@ -73,27 +74,27 @@
                 </div>
             </div>
 
-            <!-- Hero CSS Interactive Preview Card -->
+            <!-- Hero Interactive Preview Card -->
             <div class="hero-card-preview">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                     <span class="badge badge-info">Java Quiz</span>
                     <span class="badge badge-warning">⏱️ 04:52</span>
                 </div>
                 <h4 style="font-size: 1.1rem; color: var(--text-primary); margin-bottom: 1rem;">
-                    Which Java collection class stores unique elements only?
+                    Which OOP concept allows one method call to behave differently depending on the runtime instance?
                 </h4>
                 <div style="display: flex; flex-direction: column; gap: 8px;">
                     <div class="option-card" style="padding: 10px 14px; font-size: 0.9rem;">
                         <span class="option-prefix">A</span>
-                        <span class="option-text-val">ArrayList</span>
+                        <span class="option-text-val">Encapsulation</span>
                     </div>
                     <div class="option-card selected" style="padding: 10px 14px; font-size: 0.9rem;">
                         <span class="option-prefix">B</span>
-                        <span class="option-text-val">HashSet (Selected)</span>
+                        <span class="option-text-val">Polymorphism (Selected)</span>
                     </div>
                     <div class="option-card" style="padding: 10px 14px; font-size: 0.9rem;">
                         <span class="option-prefix">C</span>
-                        <span class="option-text-val">LinkedList</span>
+                        <span class="option-text-val">Inheritance</span>
                     </div>
                 </div>
             </div>
@@ -103,11 +104,66 @@
     <!-- Main Container -->
     <main class="main-container">
 
-        <!-- Quiz Categories Section -->
+        <!-- User Profile Dashboard Section -->
+        <section id="userDashboard" style="margin-bottom: 4rem;">
+            <div class="section-header" style="text-align: left; margin-bottom: 2rem;">
+                <span class="badge badge-info" style="margin-bottom: 0.5rem;">📊 User Dashboard</span>
+                <h2 id="userWelcomeHeader">Welcome back, Developer</h2>
+                <p>Track your technical learning metrics, accuracy, and practice recommendations.</p>
+            </div>
+
+            <!-- User Dashboard Metrics Grid -->
+            <div class="dash-metrics-grid">
+                <div class="dash-metric-card">
+                    <div class="val" id="userDashCompleted">0</div>
+                    <div class="lbl">Quizzes Completed</div>
+                </div>
+                <div class="dash-metric-card">
+                    <div class="val" style="color: var(--success-color);" id="userDashBest">0</div>
+                    <div class="lbl">Best Score</div>
+                </div>
+                <div class="dash-metric-card">
+                    <div class="val" id="userDashAvg">0%</div>
+                    <div class="lbl">Average Score</div>
+                </div>
+                <div class="dash-metric-card">
+                    <div class="val" id="userDashAttempted">0</div>
+                    <div class="lbl">Questions Attempted</div>
+                </div>
+                <div class="dash-metric-card">
+                    <div class="val" style="color: var(--accent-blue);" id="userDashAccuracy">0%</div>
+                    <div class="lbl">Accuracy Rate</div>
+                </div>
+            </div>
+
+            <!-- Dashboard Quick Actions & Recommendations -->
+            <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 1.75rem;">
+                <div class="category-card">
+                    <h3>💡 Recommended Practice</h3>
+                    <p style="margin-bottom: 1rem;">Based on your recent attempts, focus on these key concepts to maximize your score:</p>
+                    <div style="margin-bottom: 1.5rem;" id="dashWeakTopics">
+                        <span class="badge badge-warning">⚠️ Exception Handling</span>
+                        <span class="badge badge-warning">⚠️ SQL Joins</span>
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="startWeakPractice()">🎯 Practice Weak Questions</button>
+                </div>
+
+                <div class="category-card">
+                    <h3>🌟 Strong Performance Areas</h3>
+                    <p style="margin-bottom: 1rem;">Topics where you have demonstrated high accuracy:</p>
+                    <div id="dashStrongTopics">
+                        <span class="badge badge-success">✓ Java Basics</span>
+                        <span class="badge badge-success">✓ OOP Concepts</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Categories Section -->
         <section id="categories">
             <div class="section-header">
                 <h2>Explore Quiz Categories</h2>
-                <p>Choose your technical domain and start practicing immediately.</p>
+                <p>Select your technical domain and start practicing immediately.</p>
             </div>
 
             <div class="categories-grid">
@@ -115,82 +171,58 @@
                 <div class="category-card">
                     <div class="category-icon">☕</div>
                     <h3>Java Programming</h3>
-                    <p>Master Core Java, OOP principles, Collections framework, Threads, and Exception handling.</p>
-                    <div class="category-meta">
-                        <span>10 Questions</span>
-                        <span class="badge badge-info">Easy • Medium • Hard</span>
-                    </div>
-                    <button type="button" class="btn btn-primary" onclick="selectCategoryAndSetup('java')">Start Java Quiz</button>
-                </div>
-
-                <!-- HTML & CSS -->
-                <div class="category-card">
-                    <div class="category-icon">🎨</div>
-                    <h3>HTML & CSS</h3>
-                    <p>Test your knowledge of HTML5 semantic tags, CSS Flexbox, Grid, Box Model, and Selectors.</p>
-                    <div class="category-meta">
-                        <span>10 Questions</span>
-                        <span class="badge badge-info">Easy • Medium • Hard</span>
-                    </div>
-                    <button type="button" class="btn btn-primary" onclick="selectCategoryAndSetup('html_css')">Start HTML/CSS Quiz</button>
-                </div>
-
-                <!-- JavaScript -->
-                <div class="category-card">
-                    <div class="category-icon">⚡</div>
-                    <h3>JavaScript (ES6+)</h3>
-                    <p>Challenge yourself on ES6 features, Closures, DOM manipulation, Promises, and Async logic.</p>
-                    <div class="category-meta">
-                        <span>10 Questions</span>
-                        <span class="badge badge-info">Easy • Medium • Hard</span>
-                    </div>
-                    <button type="button" class="btn btn-primary" onclick="selectCategoryAndSetup('javascript')">Start JS Quiz</button>
-                </div>
-
-                <!-- DBMS -->
-                <div class="category-card">
-                    <div class="category-icon">🗄️</div>
-                    <h3>DBMS & SQL</h3>
-                    <p>Practice SQL queries, Relational Primary/Foreign Keys, Normalization, ACID, and Joins.</p>
-                    <div class="category-meta">
-                        <span>10 Questions</span>
-                        <span class="badge badge-info">Easy • Medium • Hard</span>
-                    </div>
-                    <button type="button" class="btn btn-primary" onclick="selectCategoryAndSetup('dbms')">Start DBMS Quiz</button>
+                    <p>Core Java syntax, OOP inheritance, Collections, Threads, and Exception handling.</p>
+                    <button type="button" class="btn btn-primary" onclick="openQuizSetup('java')">Start Java Quiz</button>
                 </div>
 
                 <!-- OOP -->
                 <div class="category-card">
                     <div class="category-icon">🧩</div>
                     <h3>Object-Oriented Programming</h3>
-                    <p>Deep dive into Encapsulation, Abstraction, Polymorphism, Inheritance, and Interfaces.</p>
-                    <div class="category-meta">
-                        <span>10 Questions</span>
-                        <span class="badge badge-info">Easy • Medium • Hard</span>
-                    </div>
-                    <button type="button" class="btn btn-primary" onclick="selectCategoryAndSetup('oop')">Start OOP Quiz</button>
+                    <p>Encapsulation, Abstraction, Polymorphism, Interfaces, and Composition.</p>
+                    <button type="button" class="btn btn-primary" onclick="openQuizSetup('oop')">Start OOP Quiz</button>
+                </div>
+
+                <!-- HTML & CSS -->
+                <div class="category-card">
+                    <div class="category-icon">🎨</div>
+                    <h3>HTML & CSS</h3>
+                    <p>Semantic HTML5, CSS Flexbox, Grid layout, Specificity, and Selectors.</p>
+                    <button type="button" class="btn btn-primary" onclick="openQuizSetup('html_css')">Start HTML/CSS Quiz</button>
+                </div>
+
+                <!-- JavaScript -->
+                <div class="category-card">
+                    <div class="category-icon">⚡</div>
+                    <h3>JavaScript (ES6+)</h3>
+                    <p>Closures, DOM Events, Promises, Arrow Functions, and Array Methods.</p>
+                    <button type="button" class="btn btn-primary" onclick="openQuizSetup('javascript')">Start JS Quiz</button>
+                </div>
+
+                <!-- DBMS -->
+                <div class="category-card">
+                    <div class="category-icon">🗄️</div>
+                    <h3>DBMS & SQL</h3>
+                    <p>SQL SELECT queries, Primary Keys, Normalization, ACID transactions, and Joins.</p>
+                    <button type="button" class="btn btn-primary" onclick="openQuizSetup('dbms')">Start DBMS Quiz</button>
                 </div>
 
                 <!-- Computer Science -->
                 <div class="category-card">
                     <div class="category-icon">💻</div>
                     <h3>Computer Science Core</h3>
-                    <p>Cover fundamental Data Structures, Operating Systems, Computer Networks, and Algorithms.</p>
-                    <div class="category-meta">
-                        <span>10 Questions</span>
-                        <span class="badge badge-info">Easy • Medium • Hard</span>
-                    </div>
-                    <button type="button" class="btn btn-primary" onclick="selectCategoryAndSetup('cs')">Start CS Quiz</button>
+                    <p>Data Structures, Operating Systems, OSI Layers, IP Routing, and Algorithms.</p>
+                    <button type="button" class="btn btn-primary" onclick="openQuizSetup('cs')">Start CS Quiz</button>
                 </div>
             </div>
         </section>
 
-        <!-- Quiz Setup Section -->
+        <!-- Quiz Setup Card -->
         <section id="quizSetupSection" class="quiz-setup-card">
             <div style="text-align: center; margin-bottom: 2rem;">
                 <span class="badge badge-info">⚙️ Quiz Configuration</span>
                 <h2 style="font-size: 1.8rem; font-weight: 800; color: var(--text-primary); margin-top: 0.5rem;">
-                    Configure Your Quiz Attempt
+                    Configure Your Test Attempt
                 </h2>
             </div>
 
@@ -198,8 +230,8 @@
                 <div class="setup-form-grid">
                     <!-- Player Name -->
                     <div class="form-group full-width">
-                        <label for="setupPlayerName">Your Name / Player Handle</label>
-                        <input type="text" id="setupPlayerName" class="form-input" placeholder="e.g. Manikandan" required>
+                        <label for="setupPlayerName">Player Name / Handle</label>
+                        <input type="text" id="setupPlayerName" class="form-input" placeholder="Enter your name" required>
                     </div>
 
                     <!-- Category -->
@@ -207,17 +239,17 @@
                         <label for="setupCategory">Category</label>
                         <select id="setupCategory" class="form-select">
                             <option value="java">Java Programming</option>
+                            <option value="oop">Object-Oriented Programming</option>
                             <option value="html_css">HTML & CSS</option>
                             <option value="javascript">JavaScript (ES6+)</option>
                             <option value="dbms">DBMS & SQL</option>
-                            <option value="oop">Object-Oriented Programming</option>
                             <option value="cs">Computer Science Core</option>
                         </select>
                     </div>
 
                     <!-- Difficulty -->
                     <div class="form-group">
-                        <label for="setupDifficulty">Difficulty Level</label>
+                        <label for="setupDifficulty">Difficulty</label>
                         <select id="setupDifficulty" class="form-select">
                             <option value="Easy">Easy</option>
                             <option value="Medium" selected>Medium</option>
@@ -225,9 +257,9 @@
                         </select>
                     </div>
 
-                    <!-- Number of Questions -->
+                    <!-- Question Count -->
                     <div class="form-group">
-                        <label for="setupCount">Number of Questions</label>
+                        <label for="setupCount">Question Count</label>
                         <select id="setupCount" class="form-select">
                             <option value="5">5 Questions</option>
                             <option value="10" selected>10 Questions</option>
@@ -248,25 +280,24 @@
 
                 <div style="text-align: center;">
                     <button type="submit" class="btn btn-primary" style="padding: 1rem 3rem; font-size: 1.05rem;">
-                        🎯 Start Quiz
+                        🎯 Start Test
                     </button>
                 </div>
             </form>
         </section>
 
-        <!-- Advanced Quiz Dashboard -->
+        <!-- Advanced Test-Taking Interface -->
         <section id="quizDashboard" class="quiz-dashboard">
             <!-- Header Bar -->
             <div class="dash-header">
                 <div>
                     <h3 style="font-size: 1.3rem; font-weight: 800; color: var(--text-primary);" id="dashCategory">Java</h3>
-                    <div class="dash-meta-tags">
+                    <div style="display: flex; gap: 8px; align-items: center; margin-top: 4px;">
                         <span style="font-size: 0.9rem; color: var(--text-secondary);">Player: <strong id="dashPlayerName">Player</strong></span>
                         <span class="badge badge-info" id="dashDifficulty">Medium</span>
                     </div>
                 </div>
 
-                <!-- Timer Badge -->
                 <div class="badge badge-info" id="dashTimerBadge" style="font-size: 1.1rem; padding: 8px 18px;">
                     ⏱️ 05:00
                 </div>
@@ -275,40 +306,58 @@
             <!-- Progress Bar -->
             <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 0.4rem;">
                 <span id="dashProgressText">Question 1 of 10</span>
-                <span>Quiz Progress</span>
+                <span>Test Progress</span>
             </div>
             <div class="progress-bar-wrap">
                 <div class="progress-bar-fill" id="dashProgressBarFill"></div>
             </div>
 
-            <!-- Dashboard Grid (Question Area + Question Palette) -->
+            <!-- Dashboard Grid (Left Area + Right Side Panel) -->
             <div class="dashboard-grid">
-                <!-- Question Box -->
+                <!-- Left Question Area -->
                 <div class="question-card-box">
-                    <span class="badge badge-info" id="qNumberBadge" style="margin-bottom: 1rem; display: inline-block;">Question 1</span>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <span class="badge badge-info" id="qNumberBadge">Question 1</span>
+                        <button type="button" class="btn btn-outline" id="toggleHintBtn" onclick="toggleHint()">💡 Need a Hint?</button>
+                    </div>
+
+                    <!-- Hint Card Box -->
+                    <div class="hint-card-box" id="qHintCard">
+                        <strong>💡 Hint:</strong> <span id="qHintText">Clue text goes here...</span>
+                    </div>
+
                     <h3 class="q-text" id="qText">Loading question...</h3>
 
-                    <!-- Selectable Option Cards -->
+                    <!-- Selectable Answer Cards -->
                     <div class="options-list" id="qOptionsGrid"></div>
 
-                    <!-- Navigation Action Buttons -->
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 2rem;">
-                        <button type="button" class="btn btn-secondary" id="prevQBtn" onclick="prevQuestion()">⬅️ Previous</button>
+                    <!-- Action Buttons Bar -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 2rem; flex-wrap: wrap; gap: 10px;">
+                        <button type="button" class="btn btn-outline" id="markReviewBtn" onclick="toggleMarkForReview()">🔖 Mark for Review</button>
+                        
                         <div style="display: flex; gap: 10px;">
+                            <button type="button" class="btn btn-secondary" id="prevQBtn" onclick="prevQuestion()">⬅️ Previous</button>
                             <button type="button" class="btn btn-secondary" id="nextQBtn" onclick="nextQuestion()">Next ➡️</button>
-                            <button type="button" class="btn btn-primary" id="submitQuizBtn" onclick="submitQuiz()">✅ Submit Quiz</button>
+                            <button type="button" class="btn btn-primary" id="submitQuizBtn" onclick="submitQuiz()">✅ Submit Test</button>
                         </div>
                     </div>
                 </div>
 
-                <!-- Question Palette -->
+                <!-- Right Side Panel (Question Palette & Stats) -->
                 <div class="palette-box">
-                    <h4>Question Palette</h4>
+                    <h4>Question Navigator</h4>
                     <div class="palette-grid" id="questionPalette"></div>
+
+                    <div style="margin: 1.25rem 0; padding: 1rem; background: var(--bg-card); border-radius: 8px; font-size: 0.85rem;">
+                        <div>Answered: <strong id="sideAnsweredCount" style="color: var(--success-color);">0</strong></div>
+                        <div>Unanswered: <strong id="sideUnansweredCount" style="color: var(--text-muted);">10</strong></div>
+                        <div>Marked for Review: <strong id="sideMarkedCount" style="color: var(--warning-color);">0</strong></div>
+                    </div>
 
                     <div class="palette-legend">
                         <div class="legend-item"><span class="legend-dot current"></span> Current Active</div>
                         <div class="legend-item"><span class="legend-dot answered"></span> Answered</div>
+                        <div class="legend-item"><span class="legend-dot marked"></span> Marked for Review</div>
                         <div class="legend-item"><span class="legend-dot unanswered"></span> Unanswered</div>
                     </div>
                 </div>
@@ -320,13 +369,13 @@
             <span class="badge badge-success" id="resFeedbackBadge" style="font-size: 0.9rem; padding: 6px 18px; margin-bottom: 1rem; display: inline-block;">🎉 Performance Report</span>
             
             <h2 style="font-size: 2.2rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.5rem;">
-                Quiz Result Summary
+                FINAL RESULT
             </h2>
             <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
                 Player: <strong id="resPlayerName">Player</strong> • <span id="resCategory">Java</span> (<span id="resDifficulty">Medium</span>)
             </p>
 
-            <!-- Circular SVG Score Visualization -->
+            <!-- Circular SVG Score Indicator -->
             <div class="score-circle-wrapper">
                 <svg class="score-circle-svg" viewBox="0 0 160 160">
                     <circle class="score-circle-bg" cx="80" cy="80" r="70"></circle>
@@ -337,7 +386,7 @@
 
             <!-- Feedback Banner -->
             <div class="badge badge-info" id="resFeedback" style="font-size: 1.15rem; padding: 12px 24px; margin-bottom: 2rem; display: inline-block; width: 100%; max-width: 600px;">
-                Good Job!
+                Good Effort!
             </div>
 
             <!-- Detailed Metrics Grid -->
@@ -348,11 +397,11 @@
                 </div>
                 <div class="metric-box">
                     <div class="metric-value success" id="resCorrect">0</div>
-                    <div class="metric-label">Correct Answers</div>
+                    <div class="metric-label">Correct</div>
                 </div>
                 <div class="metric-box">
                     <div class="metric-value danger" id="resWrong">0</div>
-                    <div class="metric-label">Wrong Answers</div>
+                    <div class="metric-label">Wrong</div>
                 </div>
                 <div class="metric-box">
                     <div class="metric-value" id="resUnanswered">0</div>
@@ -372,21 +421,22 @@
                 </div>
             </div>
 
-            <!-- Action Buttons -->
+            <!-- Retake & Action Buttons -->
             <div class="btn-group">
-                <button type="button" class="btn btn-primary" onclick="reviewAnswers()">🔍 Review Answers</button>
-                <button type="button" class="btn btn-secondary" onclick="openQuizSetup()">🔄 Retry Quiz</button>
-                <a href="#leaderboard" class="btn btn-outline">🏆 View Leaderboard</a>
-                <a href="#home" class="btn btn-outline">🏠 Back to Home</a>
+                <button type="button" class="btn btn-primary" onclick="reviewAnswers()">🔍 Review Answers & Explanations</button>
+                <button type="button" class="btn btn-warning" onclick="reviewWrongAnswersOnly()">❌ Questions to Review</button>
+                <button type="button" class="btn btn-secondary" onclick="startWeakPractice()">🎯 Practice Weak Questions</button>
+                <button type="button" class="btn btn-secondary" onclick="openQuizSetup()">🔄 Retake Quiz</button>
+                <a href="#userDashboard" class="btn btn-outline">📊 Back to Dashboard</a>
             </div>
         </section>
 
-        <!-- Question Review Section -->
+        <!-- Answer Key & Step-by-Step Explanations Section -->
         <section id="reviewSection" class="review-section">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 10px;">
                 <div>
-                    <h2>Question Review</h2>
-                    <p style="color: var(--text-secondary);">Detailed breakdown of your selected answers vs. correct answers.</p>
+                    <h2>Answer Key & Explanations</h2>
+                    <p style="color: var(--text-secondary);">Comprehensive breakdown of every question, user answers, correct answers, step-by-step solutions, and concepts.</p>
                 </div>
                 <button type="button" class="btn btn-secondary" onclick="backToResults()">⬅️ Back to Results</button>
             </div>
@@ -394,17 +444,31 @@
             <div id="reviewQuestionsList"></div>
         </section>
 
+        <!-- Dedicated Wrong Answer Review Section -->
+        <section id="weakReviewSection" class="review-section">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 10px;">
+                <div>
+                    <h2>Questions to Review</h2>
+                    <p style="color: var(--text-secondary);">Focus strictly on the questions you answered incorrectly or left unanswered.</p>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button type="button" class="btn btn-primary" onclick="startWeakPractice()">🎯 Practice These Questions</button>
+                    <button type="button" class="btn btn-secondary" onclick="backToResults()">⬅️ Back to Results</button>
+                </div>
+            </div>
+
+            <div id="weakReviewList"></div>
+        </section>
+
         <!-- Local Leaderboard Section -->
         <section id="leaderboard" style="padding-top: 2rem;">
             <div class="section-header">
                 <h2>🏆 Local Leaderboard</h2>
-                <p>Top player performances stored locally in your browser.</p>
+                <p>Top scores and performance metrics stored locally in your browser.</p>
             </div>
 
-            <!-- Top 3 Podium Cards -->
             <div class="top3-container" id="top3Container"></div>
 
-            <!-- Leaderboard Table -->
             <div class="table-wrapper">
                 <table class="styled-table">
                     <thead>
@@ -423,34 +487,13 @@
             </div>
         </section>
 
-        <!-- User Profile Dashboard & History Section -->
+        <!-- Quiz History Section -->
         <section id="history" style="padding-top: 2rem;">
             <div class="section-header">
-                <h2>📊 User Dashboard & History</h2>
-                <p id="userDashName">Your Quiz Attempt History & Analytics</p>
+                <h2>📜 Quiz Attempt History</h2>
+                <p>Detailed log of your previous test attempts.</p>
             </div>
 
-            <!-- User Dashboard Summary Metrics -->
-            <div class="metrics-grid" style="margin-bottom: 2.5rem;">
-                <div class="metric-box">
-                    <div class="metric-value" id="userTotalCompleted">0</div>
-                    <div class="metric-label">Quizzes Completed</div>
-                </div>
-                <div class="metric-box">
-                    <div class="metric-value success" id="userBestScore">0</div>
-                    <div class="metric-label">Best Score</div>
-                </div>
-                <div class="metric-box">
-                    <div class="metric-value" id="userAvgPercentage">0%</div>
-                    <div class="metric-label">Avg Percentage</div>
-                </div>
-                <div class="metric-box">
-                    <div class="metric-value" id="userTotalCorrect">0</div>
-                    <div class="metric-label">Total Correct</div>
-                </div>
-            </div>
-
-            <!-- History Table -->
             <div class="table-wrapper">
                 <table class="styled-table">
                     <thead>
@@ -481,24 +524,24 @@
         <section style="padding-top: 2rem;">
             <div class="section-header">
                 <h2>How It Works</h2>
-                <p>3 simple steps to start testing and improving your knowledge.</p>
+                <p>3 steps to improve your software development knowledge.</p>
             </div>
 
             <div class="steps-grid">
                 <div class="step-card">
                     <div class="step-num">01</div>
                     <h3>Choose Your Quiz</h3>
-                    <p>Select your favorite category (Java, Web Dev, DBMS, OOP, CS) and set your preferred difficulty level and timer.</p>
+                    <p>Select category, difficulty level, and timer preferences.</p>
                 </div>
                 <div class="step-card">
                     <div class="step-num">02</div>
                     <h3>Challenge Yourself</h3>
-                    <p>Answer questions using the interactive palette, track remaining time, and review before submitting.</p>
+                    <p>Use hints, mark questions for review, and navigate with the side palette.</p>
                 </div>
                 <div class="step-card">
                     <div class="step-num">03</div>
                     <h3>Check Your Performance</h3>
-                    <p>View detailed accuracy metrics, review detailed answer explanations, and climb the local leaderboard.</p>
+                    <p>Review step-by-step solutions, identify weak areas, and practice weak questions.</p>
                 </div>
             </div>
         </section>
@@ -507,7 +550,7 @@
         <section id="about" class="category-card" style="margin-bottom: 4rem;">
             <h3>About QuizSystem</h3>
             <p>
-                QuizSystem is an interactive learning and assessment platform that helps users test their knowledge across programming and computer science topics. It offers customizable multiple categories, difficulty levels, timed quizzes, instant results, and local performance tracking.
+                QuizSystem is an interactive learning and assessment platform that helps users test their knowledge across programming and computer science topics. It offers multiple categories, difficulty levels, timed tests, instant feedback, hints, step-by-step explanations, performance analytics, and weak-area practice sessions.
             </p>
         </section>
 
@@ -515,33 +558,29 @@
         <section id="faq" style="padding-top: 1rem;">
             <div class="section-header">
                 <h2>Frequently Asked Questions</h2>
-                <p>Everything you need to know about QuizSystem.</p>
+                <p>Common questions about QuizSystem.</p>
             </div>
 
             <div class="faq-list">
                 <div class="faq-item">
                     <div class="faq-question">How does the quiz work? <span>➕</span></div>
-                    <div class="faq-answer">Select a category and difficulty level, answer multiple-choice questions within the timer duration, and view instant score metrics upon submission.</div>
+                    <div class="faq-answer">Select a category and difficulty level, answer questions using the interactive palette, and receive instant score metrics and step-by-step explanations upon submission.</div>
                 </div>
                 <div class="faq-item">
                     <div class="faq-question">Can I choose a category and difficulty? <span>➕</span></div>
-                    <div class="faq-answer">Yes! You can choose from Java, HTML & CSS, JavaScript, DBMS, OOP, and Computer Science across Easy, Medium, and Hard difficulty levels.</div>
+                    <div class="faq-answer">Yes! You can choose from Java, OOP, HTML & CSS, JavaScript, DBMS, and Computer Science across Easy, Medium, and Hard difficulties.</div>
                 </div>
                 <div class="faq-item">
                     <div class="faq-question">Is there a timer for the quiz? <span>➕</span></div>
-                    <div class="faq-answer">Yes, you can select between 5-minute, 10-minute, or No Timer options during quiz setup.</div>
+                    <div class="faq-answer">Yes, you can choose 5 minutes, 10 minutes, or No Timer mode.</div>
                 </div>
                 <div class="faq-item">
                     <div class="faq-question">Are my results and history saved? <span>➕</span></div>
-                    <div class="faq-answer">Your results and leaderboard rankings are automatically saved locally in your browser using LocalStorage.</div>
+                    <div class="faq-answer">Yes, your attempt history and leaderboard rankings are saved locally in your browser via LocalStorage.</div>
                 </div>
                 <div class="faq-item">
-                    <div class="faq-question">Can I retry a quiz? <span>➕</span></div>
-                    <div class="faq-answer">Absolutely! Questions and options are randomized on every new attempt so you can practice as many times as you like.</div>
-                </div>
-                <div class="faq-item">
-                    <div class="faq-question">Does the website require an account or registration? <span>➕</span></div>
-                    <div class="faq-answer">No account or signup is required. You can simply enter your name handle and start playing immediately.</div>
+                    <div class="faq-question">Can I retry a quiz or practice weak questions? <span>➕</span></div>
+                    <div class="faq-answer">Yes! You can retake any quiz or click 'Practice Weak Questions' to launch a targeted practice test on topics you missed.</div>
                 </div>
             </div>
         </section>
@@ -586,10 +625,10 @@
                 <h4 style="color: #ffffff; font-size: 1rem; margin-bottom: 1rem;">Quick Links</h4>
                 <ul class="footer-links">
                     <li><a href="#home">Home</a></li>
+                    <li><a href="#userDashboard">Dashboard</a></li>
                     <li><a href="#categories">Categories</a></li>
                     <li><a href="#leaderboard">Leaderboard</a></li>
                     <li><a href="#history">History</a></li>
-                    <li><a href="#about">About</a></li>
                 </ul>
             </div>
             <div>
