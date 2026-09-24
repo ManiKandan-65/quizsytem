@@ -1,12 +1,9 @@
 /* ==========================================================================
-   QuizSystem - Advanced Learning-Focused Question Dataset
-   Categorized by: Java, HTML & CSS, JavaScript, DBMS, OOP, Computer Science
-   Each question includes:
-   - hint: Educational clue (doesn't give away the answer directly)
-   - explanation: WHY the correct answer matches
-   - solution: Step-by-step resolution array (HOW TO SOLVE)
-   - concept: Core underlying CS/programming concept
-   - quickTip: Memory tip / rule of thumb
+   QuizSystem - Expanded EdTech Question Dataset
+   Categories: Java, OOP, DBMS, SQL, HTML/CSS, JavaScript, OS, Computer Networks
+   Fields per question:
+   - id, category, difficulty, question, options, correct
+   - hint, explanation (WHY?), solution (HOW TO SOLVE array), concept, quickTip
    ========================================================================== */
 
 const QUESTION_DATABASE = {
@@ -98,213 +95,6 @@ const QUESTION_DATABASE = {
         }
     ],
 
-    html_css: [
-        {
-            id: "hc1",
-            category: "HTML & CSS",
-            difficulty: "Easy",
-            question: "Which HTML tag is used to create an inline hyperlink?",
-            options: ["<link>", "<a>", "<href>", "<url>"],
-            correct: 1,
-            hint: "The tag stands for 'anchor' and uses the 'href' attribute to point to the destination URL.",
-            explanation: "The <a> (anchor) element defines a hyperlink that links one page to another or to an anchor within the same page.",
-            solution: [
-                "Step 1: Identify that <link> is used in <head> for external CSS stylesheets.",
-                "Step 2: Recognize that href is an attribute, not an HTML tag name.",
-                "Step 3: Conclude that <a> (Anchor tag) is the correct HTML element."
-            ],
-            concept: "HTML Links & Hypertext Navigation.",
-            quickTip: "Use <a href='url'>Link Text</a> to build clickable web links."
-        },
-        {
-            id: "hc2",
-            category: "HTML & CSS",
-            difficulty: "Medium",
-            question: "In CSS Flexbox, which property aligns flex items along the cross axis?",
-            options: ["justify-content", "align-items", "flex-direction", "align-content"],
-            correct: 1,
-            hint: "justify-content handles alignment along the main axis, while this property handles alignment along the perpendicular cross axis.",
-            explanation: "align-items sets the align-self value on all direct flex children, aligning them along the cross axis (vertically by default in row layout).",
-            solution: [
-                "Step 1: Differentiate main axis vs. cross axis in Flexbox.",
-                "Step 2: justify-content controls main axis alignment (e.g. horizontal in row mode).",
-                "Step 3: align-items controls cross axis alignment (e.g. vertical in row mode)."
-            ],
-            concept: "CSS Flexible Box Layout Model (Flexbox Alignment).",
-            quickTip: "justify-content = Main Axis | align-items = Cross Axis."
-        },
-        {
-            id: "hc3",
-            category: "HTML & CSS",
-            difficulty: "Medium",
-            question: "In the CSS Box Model, which space sits directly between the element content and its border?",
-            options: ["margin", "padding", "outline", "gap"],
-            correct: 1,
-            hint: "This space creates inner clearance inside the border around an element's content.",
-            explanation: "Padding is the space inside the border surrounding the content area. Margin is the outer space outside the border.",
-            solution: [
-                "Step 1: Review Box Model order from inside out: Content -> Padding -> Border -> Margin.",
-                "Step 2: Identify that padding sits directly between Content and Border.",
-                "Step 3: Margin sits outside the border to separate adjacent elements."
-            ],
-            concept: "CSS Box Model Architecture (Content, Padding, Border, Margin).",
-            quickTip: "Padding is INNER space; Margin is OUTER space."
-        },
-        {
-            id: "hc4",
-            category: "HTML & CSS",
-            difficulty: "Hard",
-            question: "What is the specificity calculation score of a single ID selector in CSS?",
-            options: ["(0, 0, 0, 1)", "(0, 0, 1, 0)", "(0, 1, 0, 0)", "(1, 0, 0, 0)"],
-            correct: 2,
-            hint: "Specificity is expressed as (Inline, ID, Class/Attr/Pseudo, Element). An ID fills the second column.",
-            explanation: "An ID selector (e.g. #header) has a specificity value of (0, 1, 0, 0), overriding class selectors (0, 0, 1, 0) and element selectors (0, 0, 0, 1).",
-            solution: [
-                "Step 1: Recall specificity tuple format (Inline, ID, Class, Type).",
-                "Step 2: Element selectors = (0,0,0,1); Class/Pseudo = (0,0,1,0); ID selectors = (0,1,0,0); Inline = (1,0,0,0).",
-                "Step 3: Therefore, a single ID selector scores (0, 1, 0, 0)."
-            ],
-            concept: "CSS Cascade & Specificity Weight Hierarchy.",
-            quickTip: "ID > Class > Element selector."
-        }
-    ],
-
-    javascript: [
-        {
-            id: "js1",
-            category: "JavaScript",
-            difficulty: "Easy",
-            question: "Which keyword is used to declare a variable in JavaScript that cannot be reassigned?",
-            options: ["var", "let", "const", "static"],
-            correct: 2,
-            hint: "This ES6 keyword creates a block-scoped immutable binding that prevents re-assignment.",
-            explanation: "Variables declared with 'const' are block-scoped and cannot be reassigned once bound to a value.",
-            solution: [
-                "Step 1: 'var' is function-scoped and reassignable.",
-                "Step 2: 'let' is block-scoped and reassignable.",
-                "Step 3: 'const' is block-scoped and forbids reassignment."
-            ],
-            concept: "ES6 Variable Declarations (var vs let vs const).",
-            quickTip: "Use 'const' by default unless you know the variable value will change."
-        },
-        {
-            id: "js2",
-            category: "JavaScript",
-            difficulty: "Medium",
-            question: "What is the evaluated output of typeof NaN in JavaScript?",
-            options: ["undefined", "null", "number", "nan"],
-            correct: 2,
-            hint: "Despite standing for 'Not-a-Number', its underlying primitive type classification in JavaScript is numeric.",
-            explanation: "In JavaScript, NaN (Not-a-Number) is a special numeric value defined by the IEEE 754 floating-point standard, so typeof NaN returns 'number'.",
-            solution: [
-                "Step 1: Recognize NaN as a special result of failed mathematical operations (e.g. 'abc' / 2).",
-                "Step 2: Check the ECMAScript spec specification for typeof NaN.",
-                "Step 3: In ES specifications, typeof NaN evaluates to 'number'."
-            ],
-            concept: "JavaScript Type System Gotchas & IEEE 754 Floating Point Representation.",
-            quickTip: "Use Number.isNaN(val) to reliably check for NaN."
-        },
-        {
-            id: "js3",
-            category: "JavaScript",
-            difficulty: "Medium",
-            question: "What is a Closure in JavaScript?",
-            options: [
-                "A function bundled together with references to its lexical scope environment",
-                "A built-in method to close DOM event streams",
-                "A private class keyword",
-                "An event loop termination handler"
-            ],
-            correct: 0,
-            hint: "Focus on how an inner function retains access to variables declared in its outer scope even after the outer function finishes executing.",
-            explanation: "A closure gives an inner function access to its outer function's scope variables, preserving them even after the outer function execution context is popped off the call stack.",
-            solution: [
-                "Step 1: Understand lexical scoping in JS: inner functions have access to variables in outer scopes.",
-                "Step 2: When an inner function outlives its outer function, it retains references to those outer variables.",
-                "Step 3: This bundle of function + lexical environment is called a Closure."
-            ],
-            concept: "JavaScript Execution Context, Lexical Scoping & Closures.",
-            quickTip: "Closures = Inner Function + Outer Lexical Scope Memory."
-        },
-        {
-            id: "js4",
-            category: "JavaScript",
-            difficulty: "Hard",
-            question: "What does Event Delegation rely on in the JavaScript DOM event architecture?",
-            options: ["Event Capturing", "Event Bubbling", "DOM Re-parsing", "Shadow DOM"],
-            correct: 1,
-            hint: "Events triggered on child elements propagate upwards through parent ancestors in the DOM tree.",
-            explanation: "Event Delegation uses Event Bubbling to attach a single event listener to a common parent element, catching events triggered by child elements as they bubble up.",
-            solution: [
-                "Step 1: Understand Event Bubbling: event triggers on target, then travels up to parent, grandparent, and window.",
-                "Step 2: Instead of adding 100 listeners to 100 list items, add 1 listener to the parent <ul>.",
-                "Step 3: The parent catches events as they bubble up, checking e.target."
-            ],
-            concept: "DOM Event Propagation & Event Delegation Pattern.",
-            quickTip: "Event Delegation = Single Parent Listener + Event Bubbling."
-        }
-    ],
-
-    dbms: [
-        {
-            id: "db1",
-            category: "DBMS",
-            difficulty: "Easy",
-            question: "Which SQL clause is used to filter rows returned by a SELECT query?",
-            options: ["GROUP BY", "WHERE", "ORDER BY", "HAVING"],
-            correct: 1,
-            hint: "This clause specifies condition filters before any grouping or aggregation takes place.",
-            explanation: "The WHERE clause is used to filter records and extract only those records that fulfill a specified condition.",
-            solution: [
-                "Step 1: Identify that WHERE filters individual rows before grouping.",
-                "Step 2: HAVING filters groups after GROUP BY.",
-                "Step 3: Therefore, WHERE is used for row-level filtering."
-            ],
-            concept: "Relational Database SQL Query Execution Order.",
-            quickTip: "WHERE filters rows; HAVING filters aggregated groups."
-        },
-        {
-            id: "db2",
-            category: "DBMS",
-            difficulty: "Medium",
-            question: "What does ACID stand for in Database Transaction Management?",
-            options: [
-                "Atomicity, Consistency, Isolation, Durability",
-                "Accuracy, Control, Integration, Data",
-                "Access, Concurrency, Index, Database",
-                "Action, Constraint, Isolation, Domain"
-            ],
-            correct: 0,
-            hint: "These four properties guarantee that database transactions are processed reliably.",
-            explanation: "ACID stands for Atomicity (all or nothing), Consistency (valid state transitions), Isolation (independent concurrent execution), and Durability (committed data persists).",
-            solution: [
-                "Step 1: Atomicity = All operations complete or none do.",
-                "Step 2: Consistency = Database constraints remain valid.",
-                "Step 3: Isolation = Concurrent transactions do not interfere.",
-                "Step 4: Durability = Committed transactions survive system crashes."
-            ],
-            concept: "Relational DBMS Transaction ACID Guarantees.",
-            quickTip: "Remember: All-or-nothing (Atomicity) + Reliable Storage (Durability)."
-        },
-        {
-            id: "db3",
-            category: "DBMS",
-            difficulty: "Hard",
-            question: "Which SQL JOIN type returns all records when there is a match in either left or right table?",
-            options: ["INNER JOIN", "LEFT JOIN", "RIGHT JOIN", "FULL OUTER JOIN"],
-            correct: 3,
-            hint: "Think of the set union operation that combines results from both tables regardless of match location.",
-            explanation: "FULL OUTER JOIN combines the results of both LEFT and RIGHT joins, returning all matching records from both tables and NULL for non-matching sides.",
-            solution: [
-                "Step 1: INNER JOIN returns only matching rows.",
-                "Step 2: LEFT JOIN returns all rows from left + matching right.",
-                "Step 3: FULL OUTER JOIN returns all rows from both tables, filling NULLs where no match exists."
-            ],
-            concept: "Relational Algebra & SQL Set Join Types.",
-            quickTip: "FULL OUTER JOIN = Union of Left and Right Joins."
-        }
-    ],
-
     oop: [
         {
             id: "o1",
@@ -364,45 +154,170 @@ const QUESTION_DATABASE = {
         }
     ],
 
-    cs: [
+    dbms: [
         {
-            id: "cs1",
-            category: "Computer Science",
+            id: "db1",
+            category: "DBMS",
             difficulty: "Easy",
-            question: "Which data structure operates strictly on a Last-In, First-Out (LIFO) principle?",
-            options: ["Queue", "Stack", "LinkedList", "Heap"],
+            question: "Which SQL clause is used to filter rows returned by a SELECT query?",
+            options: ["GROUP BY", "WHERE", "ORDER BY", "HAVING"],
             correct: 1,
-            hint: "Think of a stack of plates where the last plate placed on top is the first plate removed.",
-            explanation: "A Stack is a linear data structure following LIFO order, where push and pop operations occur at the top of the stack.",
+            hint: "This clause specifies condition filters before any grouping or aggregation takes place.",
+            explanation: "The WHERE clause is used to filter records and extract only those records that fulfill a specified condition.",
             solution: [
-                "Step 1: Queue = First-In, First-Out (FIFO).",
-                "Step 2: Stack = Last-In, First-Out (LIFO).",
-                "Step 3: Pushing puts an item on top; popping removes from the top."
+                "Step 1: Identify that WHERE filters individual rows before grouping.",
+                "Step 2: HAVING filters groups after GROUP BY.",
+                "Step 3: Therefore, WHERE is used for row-level filtering."
             ],
-            concept: "Core Data Structures - Linear Stacks & Call Stack Execution.",
-            quickTip: "Stack = LIFO | Queue = FIFO."
+            concept: "Relational Database SQL Query Execution Order.",
+            quickTip: "WHERE filters rows; HAVING filters aggregated groups."
         },
         {
-            id: "cs2",
-            category: "Computer Science",
+            id: "db2",
+            category: "DBMS",
             difficulty: "Medium",
-            question: "In Computer Networks, which layer of the 7-layer OSI model is responsible for logical IP addressing and packet routing?",
-            options: ["Data Link Layer", "Network Layer", "Transport Layer", "Session Layer"],
-            correct: 1,
-            hint: "Routers operate at Layer 3 of the OSI model using IP addresses to route packets across subnets.",
-            explanation: "The Network Layer (Layer 3) handles logical IP addressing, packet forwarding, and routing across heterogeneous networks.",
-            solution: [
-                "Step 1: Layer 2 (Data Link) uses MAC addresses and switches.",
-                "Step 2: Layer 3 (Network) uses IP addresses and routers.",
-                "Step 3: Layer 4 (Transport) uses TCP/UDP ports."
+            question: "What does ACID stand for in Database Transaction Management?",
+            options: [
+                "Atomicity, Consistency, Isolation, Durability",
+                "Accuracy, Control, Integration, Data",
+                "Access, Concurrency, Index, Database",
+                "Action, Constraint, Isolation, Domain"
             ],
-            concept: "OSI 7-Layer Reference Model & IP Routing Architecture.",
-            quickTip: "Layer 3 = Network Layer (IP Addresses & Routers)."
+            correct: 0,
+            hint: "These four properties guarantee that database transactions are processed reliably.",
+            explanation: "ACID stands for Atomicity (all or nothing), Consistency (valid state transitions), Isolation (independent concurrent execution), and Durability (committed data persists).",
+            solution: [
+                "Step 1: Atomicity = All operations complete or none do.",
+                "Step 2: Consistency = Database constraints remain valid.",
+                "Step 3: Isolation = Concurrent transactions do not interfere.",
+                "Step 4: Durability = Committed transactions survive system crashes."
+            ],
+            concept: "Relational DBMS Transaction ACID Guarantees.",
+            quickTip: "Remember: All-or-nothing (Atomicity) + Reliable Storage (Durability)."
+        }
+    ],
+
+    sql: [
+        {
+            id: "s1",
+            category: "SQL",
+            difficulty: "Easy",
+            question: "Which SQL keyword is used to sort the result-set in ascending or descending order?",
+            options: ["SORT BY", "ORDER BY", "ARRANGE BY", "GROUP BY"],
+            correct: 1,
+            hint: "Use ASC for ascending and DESC for descending with this clause.",
+            explanation: "The ORDER BY keyword is used to sort the result-set in ascending (default) or descending order.",
+            solution: [
+                "Step 1: Recognize that SQL specifies sorting using ORDER BY.",
+                "Step 2: By default, ORDER BY sorts in ascending order (ASC).",
+                "Step 3: Adding DESC sorts in descending order."
+            ],
+            concept: "SQL Result Set Ordering & Sorting.",
+            quickTip: "ORDER BY col_name ASC|DESC."
         },
         {
-            id: "cs3",
-            category: "Computer Science",
+            id: "s2",
+            category: "SQL",
             difficulty: "Hard",
+            question: "Which SQL JOIN type returns all records when there is a match in either left or right table?",
+            options: ["INNER JOIN", "LEFT JOIN", "RIGHT JOIN", "FULL OUTER JOIN"],
+            correct: 3,
+            hint: "Think of the set union operation that combines results from both tables regardless of match location.",
+            explanation: "FULL OUTER JOIN combines the results of both LEFT and RIGHT joins, returning all matching records from both tables and NULL for non-matching sides.",
+            solution: [
+                "Step 1: INNER JOIN returns only matching rows.",
+                "Step 2: LEFT JOIN returns all rows from left + matching right.",
+                "Step 3: FULL OUTER JOIN returns all rows from both tables, filling NULLs where no match exists."
+            ],
+            concept: "Relational Algebra & SQL Set Join Types.",
+            quickTip: "FULL OUTER JOIN = Union of Left and Right Joins."
+        }
+    ],
+
+    html_css: [
+        {
+            id: "hc1",
+            category: "HTML/CSS",
+            difficulty: "Easy",
+            question: "Which HTML tag is used to create an inline hyperlink?",
+            options: ["<link>", "<a>", "<href>", "<url>"],
+            correct: 1,
+            hint: "The tag stands for 'anchor' and uses the 'href' attribute to point to the destination URL.",
+            explanation: "The <a> (anchor) element defines a hyperlink that links one page to another or to an anchor within the same page.",
+            solution: [
+                "Step 1: Identify that <link> is used in <head> for external CSS stylesheets.",
+                "Step 2: Recognize that href is an attribute, not an HTML tag name.",
+                "Step 3: Conclude that <a> (Anchor tag) is the correct HTML element."
+            ],
+            concept: "HTML Links & Hypertext Navigation.",
+            quickTip: "Use <a href='url'>Link Text</a> to build clickable web links."
+        },
+        {
+            id: "hc2",
+            category: "HTML/CSS",
+            difficulty: "Medium",
+            question: "In CSS Flexbox, which property aligns flex items along the cross axis?",
+            options: ["justify-content", "align-items", "flex-direction", "align-content"],
+            correct: 1,
+            hint: "justify-content handles alignment along the main axis, while this property handles alignment along the perpendicular cross axis.",
+            explanation: "align-items sets the align-self value on all direct flex children, aligning them along the cross axis (vertically by default in row layout).",
+            solution: [
+                "Step 1: Differentiate main axis vs. cross axis in Flexbox.",
+                "Step 2: justify-content controls main axis alignment (e.g. horizontal in row mode).",
+                "Step 3: align-items controls cross axis alignment (e.g. vertical in row mode)."
+            ],
+            concept: "CSS Flexible Box Layout Model (Flexbox Alignment).",
+            quickTip: "justify-content = Main Axis | align-items = Cross Axis."
+        }
+    ],
+
+    javascript: [
+        {
+            id: "js1",
+            category: "JavaScript",
+            difficulty: "Easy",
+            question: "Which keyword is used to declare a variable in JavaScript that cannot be reassigned?",
+            options: ["var", "let", "const", "static"],
+            correct: 2,
+            hint: "This ES6 keyword creates a block-scoped immutable binding that prevents re-assignment.",
+            explanation: "Variables declared with 'const' are block-scoped and cannot be reassigned once bound to a value.",
+            solution: [
+                "Step 1: 'var' is function-scoped and reassignable.",
+                "Step 2: 'let' is block-scoped and reassignable.",
+                "Step 3: 'const' is block-scoped and forbids reassignment."
+            ],
+            concept: "ES6 Variable Declarations (var vs let vs const).",
+            quickTip: "Use 'const' by default unless you know the variable value will change."
+        },
+        {
+            id: "js2",
+            category: "JavaScript",
+            difficulty: "Medium",
+            question: "What is a Closure in JavaScript?",
+            options: [
+                "A function bundled together with references to its lexical scope environment",
+                "A built-in method to close DOM event streams",
+                "A private class keyword",
+                "An event loop termination handler"
+            ],
+            correct: 0,
+            hint: "Focus on how an inner function retains access to variables declared in its outer scope even after the outer function finishes executing.",
+            explanation: "A closure gives an inner function access to its outer function's scope variables, preserving them even after the outer function execution context is popped off the call stack.",
+            solution: [
+                "Step 1: Understand lexical scoping in JS: inner functions have access to variables in outer scopes.",
+                "Step 2: When an inner function outlives its outer function, it retains references to those outer variables.",
+                "Step 3: This bundle of function + lexical environment is called a Closure."
+            ],
+            concept: "JavaScript Execution Context, Lexical Scoping & Closures.",
+            quickTip: "Closures = Inner Function + Outer Lexical Scope Memory."
+        }
+    ],
+
+    os: [
+        {
+            id: "os1",
+            category: "OS",
+            difficulty: "Medium",
             question: "What is a Deadlock in Operating Systems concurrent processing?",
             options: [
                 "A state where a set of processes are permanently blocked because each holds a resource and waits for another held by another process",
@@ -420,6 +335,65 @@ const QUESTION_DATABASE = {
             ],
             concept: "Operating System Process Concurrency & Deadlock Coffman Conditions.",
             quickTip: "Deadlock = Circular Wait where everyone waits for everyone else."
+        },
+        {
+            id: "os2",
+            category: "OS",
+            difficulty: "Hard",
+            question: "What is Virtual Memory in Operating Systems?",
+            options: [
+                "A memory management capability that uses secondary storage to simulate additional RAM",
+                "GPU VRAM allocation",
+                "Cloud storage sync",
+                "ROM cache"
+            ],
+            correct: 0,
+            hint: "It uses paging and disk swap space so programs can exceed physical RAM size.",
+            explanation: "Virtual Memory creates an illusion to users of a very large main memory by swapping pages between physical RAM and disk storage.",
+            solution: [
+                "Step 1: RAM is limited physical hardware.",
+                "Step 2: OS uses hard drive disk space as swap/pagefile.",
+                "Step 3: Inactive pages are paged out to disk, expanding effective available memory space."
+            ],
+            concept: "Operating System Virtual Memory & Page Swapping.",
+            quickTip: "Virtual Memory = RAM + Disk Swap Space."
+        }
+    ],
+
+    cn: [
+        {
+            id: "cn1",
+            category: "Computer Networks",
+            difficulty: "Easy",
+            question: "In Computer Networks, which layer of the 7-layer OSI model is responsible for logical IP addressing and packet routing?",
+            options: ["Data Link Layer", "Network Layer", "Transport Layer", "Session Layer"],
+            correct: 1,
+            hint: "Routers operate at Layer 3 of the OSI model using IP addresses to route packets across subnets.",
+            explanation: "The Network Layer (Layer 3) handles logical IP addressing, packet forwarding, and routing across heterogeneous networks.",
+            solution: [
+                "Step 1: Layer 2 (Data Link) uses MAC addresses and switches.",
+                "Step 2: Layer 3 (Network) uses IP addresses and routers.",
+                "Step 3: Layer 4 (Transport) uses TCP/UDP ports."
+            ],
+            concept: "OSI 7-Layer Reference Model & IP Routing Architecture.",
+            quickTip: "Layer 3 = Network Layer (IP Addresses & Routers)."
+        },
+        {
+            id: "cn2",
+            category: "Computer Networks",
+            difficulty: "Medium",
+            question: "In TCP/IP networking, which transport layer protocol guarantees reliable, connection-oriented data delivery?",
+            options: ["UDP", "IP", "TCP", "ICMP"],
+            correct: 2,
+            hint: "This protocol uses a 3-way handshake (SYN, SYN-ACK, ACK) to establish connection state.",
+            explanation: "TCP (Transmission Control Protocol) is connection-oriented, offering reliable, ordered, and error-checked delivery of stream packets.",
+            solution: [
+                "Step 1: UDP is connectionless and unacknowledged.",
+                "Step 2: TCP performs 3-way handshake and handles packet acknowledgments.",
+                "Step 3: Therefore, TCP provides guaranteed reliable data stream delivery."
+            ],
+            concept: "Transport Layer Protocols - TCP vs UDP.",
+            quickTip: "TCP = Reliable & Connection-oriented | UDP = Fast & Connectionless."
         }
     ]
 };

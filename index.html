@@ -3,21 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QuizSystem - Advanced Learning & Assessment Platform</title>
-    <meta name="description" content="QuizSystem is an interactive learning and assessment platform that helps developers and students test their knowledge with real-time feedback, hints, and step-by-step solutions.">
+    <title>QuizSystem - Challenge Yourself. Learn Smarter.</title>
+    <meta name="description" content="QuizSystem is an advanced EdTech learning & assessment platform featuring gamified XP, levels, badges, hints, step-by-step solutions, and topic mastery analytics.">
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
+    <!-- Toast Notifications Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
     <!-- Header Navbar -->
     <header class="navbar">
         <div class="navbar-container">
-            <a href="#home" class="navbar-brand">
+            <a href="javascript:void(0)" onclick="showSection('landingSection')" class="navbar-brand">
                 📝 Quiz<span>System</span>
             </a>
 
             <div style="display: flex; align-items: center; gap: 1rem;">
-                <!-- Theme Toggle Button (Dark Default) -->
+                <!-- Theme Toggle Button -->
                 <button type="button" class="theme-toggle-btn" id="themeToggleBtn" title="Toggle Dark/Light Mode">
                     <span id="themeIcon">☀️</span>
                 </button>
@@ -29,33 +32,35 @@
 
             <nav>
                 <ul class="nav-menu" id="navMenu">
-                    <li><a href="#home" class="nav-link">Home</a></li>
-                    <li><a href="#userDashboard" class="nav-link">Dashboard</a></li>
-                    <li><a href="#categories" class="nav-link">Categories</a></li>
-                    <li><a href="#leaderboard" class="nav-link">Leaderboard</a></li>
-                    <li><a href="#history" class="nav-link">History</a></li>
-                    <li><a href="#about" class="nav-link">About</a></li>
-                    <li><a href="#faq" class="nav-link">FAQ</a></li>
-                    <li><a href="#contact" class="nav-link">Contact</a></li>
+                    <li><a href="javascript:void(0)" onclick="showSection('landingSection')" class="nav-link">Home</a></li>
+                    <li><a href="javascript:void(0)" onclick="showSection('userDashboardSection')" class="nav-link">Dashboard</a></li>
+                    <li><a href="javascript:void(0)" onclick="showSection('categoriesSection')" class="nav-link">Categories</a></li>
+                    <li><a href="javascript:void(0)" onclick="showSection('dailyChallengeSection')" class="nav-link">Daily Challenge</a></li>
+                    <li><a href="javascript:void(0)" onclick="showSection('bookmarksSection')" class="nav-link">Bookmarks</a></li>
+                    <li><a href="javascript:void(0)" onclick="showSection('leaderboardSection')" class="nav-link">Leaderboard</a></li>
+                    <li><a href="javascript:void(0)" onclick="showSection('historySection')" class="nav-link">History</a></li>
+                    <li><a href="javascript:void(0)" onclick="showSection('achievementsSection')" class="nav-link">Badges</a></li>
+                    <li><a href="javascript:void(0)" onclick="showSection('profileSection')" class="nav-link">Profile</a></li>
+                    <li><a href="javascript:void(0)" onclick="showSection('settingsSection')" class="nav-link">Settings</a></li>
                     <li><button type="button" class="btn btn-primary" onclick="openQuizSetup()">Start Quiz</button></li>
                 </ul>
             </nav>
         </div>
     </header>
 
-    <!-- Hero Section -->
-    <section id="home" class="hero-section">
+    <!-- Landing / Hero Section -->
+    <section id="landingSection" class="hero-section">
         <div class="hero-container">
             <div class="hero-content">
-                <span class="hero-badge">⚡ Advanced Learning & Assessment Platform</span>
-                <h1 class="hero-title">Challenge Your <span>Knowledge</span></h1>
+                <span class="hero-badge">⚡ Advanced EdTech Quiz & Learning Platform</span>
+                <h1 class="hero-title">Challenge Yourself. <span>Learn Smarter.</span></h1>
                 <p class="hero-subtitle">
-                    Learn. Practice. Compete. Improve. Interactive quizzes with hints, step-by-step solutions, performance analytics, and weak-area practice.
+                    Master Java, OOP, DBMS, SQL, Web Development, and Core CS with gamified XP, levels, badges, hints, and step-by-step solutions.
                 </p>
 
                 <div class="hero-buttons">
-                    <button type="button" class="btn btn-primary" onclick="openQuizSetup()">🚀 Start Quiz Now</button>
-                    <a href="#categories" class="btn btn-outline">Explore Quizzes</a>
+                    <button type="button" class="btn btn-primary" onclick="openQuizSetup()">🚀 Start Quiz</button>
+                    <button type="button" class="btn btn-outline" onclick="showSection('userDashboardSection')">📊 Explore Dashboard</button>
                 </div>
 
                 <div class="hero-stats-row">
@@ -64,12 +69,12 @@
                         <p>Questions Pool</p>
                     </div>
                     <div class="stat-item">
-                        <h4>6</h4>
+                        <h4>8</h4>
                         <p>Categories</p>
                     </div>
                     <div class="stat-item">
-                        <h4>3</h4>
-                        <p>Difficulty Levels</p>
+                        <h4>5</h4>
+                        <p>XP Levels</p>
                     </div>
                 </div>
             </div>
@@ -105,18 +110,36 @@
     <main class="main-container">
 
         <!-- User Profile Dashboard Section -->
-        <section id="userDashboard" style="margin-bottom: 4rem;">
+        <section id="userDashboardSection" style="margin-bottom: 4rem;">
             <div class="section-header" style="text-align: left; margin-bottom: 2rem;">
-                <span class="badge badge-info" style="margin-bottom: 0.5rem;">📊 User Dashboard</span>
-                <h2 id="userWelcomeHeader">Welcome back, Developer</h2>
-                <p>Track your technical learning metrics, accuracy, and practice recommendations.</p>
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                    <div>
+                        <span class="badge badge-info" style="margin-bottom: 0.5rem;">📊 User Dashboard</span>
+                        <h2 id="userWelcomeHeader">Welcome back, Developer</h2>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <span class="badge badge-warning" id="dashStreakText" style="font-size: 1rem;">🔥 1 Day Streak</span>
+                        <span class="badge badge-success" id="dashXPText" style="font-size: 1rem;">0 XP</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- XP Level Progress Bar Card -->
+            <div class="dash-metric-card" style="margin-bottom: 2rem; background: linear-gradient(180deg, var(--bg-card) 0%, var(--bg-secondary) 100%);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <strong id="dashLevelTitle" style="font-size: 1.1rem; color: var(--accent-blue);">Level 1: Beginner</strong>
+                    <span style="font-size: 0.85rem; color: var(--text-secondary);">XP Progression</span>
+                </div>
+                <div class="progress-bar-wrap" style="height: 10px; margin-bottom: 0;">
+                    <div class="progress-bar-fill" id="dashXPBarFill"></div>
+                </div>
             </div>
 
             <!-- User Dashboard Metrics Grid -->
             <div class="dash-metrics-grid">
                 <div class="dash-metric-card">
                     <div class="val" id="userDashCompleted">0</div>
-                    <div class="lbl">Quizzes Completed</div>
+                    <div class="lbl">Total Quizzes</div>
                 </div>
                 <div class="dash-metric-card">
                     <div class="val" style="color: var(--success-color);" id="userDashBest">0</div>
@@ -136,83 +159,104 @@
                 </div>
             </div>
 
-            <!-- Dashboard Quick Actions & Recommendations -->
+            <!-- Topic Mastery & Practice Recommendations -->
             <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 1.75rem;">
+                <!-- Topic Mastery -->
                 <div class="category-card">
-                    <h3>💡 Recommended Practice</h3>
-                    <p style="margin-bottom: 1rem;">Based on your recent attempts, focus on these key concepts to maximize your score:</p>
-                    <div style="margin-bottom: 1.5rem;" id="dashWeakTopics">
-                        <span class="badge badge-warning">⚠️ Exception Handling</span>
-                        <span class="badge badge-warning">⚠️ SQL Joins</span>
-                    </div>
-                    <button type="button" class="btn btn-primary" onclick="startWeakPractice()">🎯 Practice Weak Questions</button>
+                    <h3>📊 Topic Mastery</h3>
+                    <p style="margin-bottom: 1.5rem;">Calculated from your historical quiz accuracy:</p>
+                    <div id="topicMasteryContainer"></div>
                 </div>
 
+                <!-- Recommendations & Quick Practice -->
                 <div class="category-card">
-                    <h3>🌟 Strong Performance Areas</h3>
-                    <p style="margin-bottom: 1rem;">Topics where you have demonstrated high accuracy:</p>
+                    <h3>💡 Recommended Practice</h3>
+                    <p style="margin-bottom: 1rem;">Based on your incorrect answers, we recommend focusing on:</p>
+                    <div style="margin-bottom: 1.5rem;" id="dashWeakTopics">
+                        <span class="badge badge-warning">⚠️ Practice Weak Topics</span>
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="startWeakPractice()">🎯 Practice Weak Questions</button>
+                    
+                    <hr style="border-color: var(--border-color); margin: 1.5rem 0;">
+                    
+                    <h3>🌟 Strong Performance</h3>
                     <div id="dashStrongTopics">
                         <span class="badge badge-success">✓ Java Basics</span>
-                        <span class="badge badge-success">✓ OOP Concepts</span>
                     </div>
                 </div>
             </div>
         </section>
 
         <!-- Categories Section -->
-        <section id="categories">
+        <section id="categoriesSection">
             <div class="section-header">
                 <h2>Explore Quiz Categories</h2>
-                <p>Select your technical domain and start practicing immediately.</p>
+                <p>Select your domain and test your skills.</p>
             </div>
 
             <div class="categories-grid">
                 <!-- Java -->
                 <div class="category-card">
                     <div class="category-icon">☕</div>
-                    <h3>Java Programming</h3>
-                    <p>Core Java syntax, OOP inheritance, Collections, Threads, and Exception handling.</p>
+                    <h3>Java</h3>
+                    <p>Syntax, Primitive Types, Collections, Exception handling, and Multithreading.</p>
                     <button type="button" class="btn btn-primary" onclick="openQuizSetup('java')">Start Java Quiz</button>
                 </div>
 
                 <!-- OOP -->
                 <div class="category-card">
                     <div class="category-icon">🧩</div>
-                    <h3>Object-Oriented Programming</h3>
-                    <p>Encapsulation, Abstraction, Polymorphism, Interfaces, and Composition.</p>
+                    <h3>OOP</h3>
+                    <p>Encapsulation, Polymorphism, Inheritance, Abstraction, and Interfaces.</p>
                     <button type="button" class="btn btn-primary" onclick="openQuizSetup('oop')">Start OOP Quiz</button>
                 </div>
 
-                <!-- HTML & CSS -->
+                <!-- DBMS -->
+                <div class="category-card">
+                    <div class="category-icon">🗄️</div>
+                    <h3>DBMS</h3>
+                    <p>Relational Model, Primary Keys, Normalization, ACID Transactions, and Triggers.</p>
+                    <button type="button" class="btn btn-primary" onclick="openQuizSetup('dbms')">Start DBMS Quiz</button>
+                </div>
+
+                <!-- SQL -->
+                <div class="category-card">
+                    <div class="category-icon">🔍</div>
+                    <h3>SQL</h3>
+                    <p>SELECT Queries, WHERE filtering, GROUP BY, HAVING, and SQL JOIN types.</p>
+                    <button type="button" class="btn btn-primary" onclick="openQuizSetup('sql')">Start SQL Quiz</button>
+                </div>
+
+                <!-- HTML/CSS -->
                 <div class="category-card">
                     <div class="category-icon">🎨</div>
-                    <h3>HTML & CSS</h3>
-                    <p>Semantic HTML5, CSS Flexbox, Grid layout, Specificity, and Selectors.</p>
+                    <h3>HTML/CSS</h3>
+                    <p>Semantic Elements, CSS Flexbox, Grid Layout, Box Model, and Specificity.</p>
                     <button type="button" class="btn btn-primary" onclick="openQuizSetup('html_css')">Start HTML/CSS Quiz</button>
                 </div>
 
                 <!-- JavaScript -->
                 <div class="category-card">
                     <div class="category-icon">⚡</div>
-                    <h3>JavaScript (ES6+)</h3>
-                    <p>Closures, DOM Events, Promises, Arrow Functions, and Array Methods.</p>
+                    <h3>JavaScript</h3>
+                    <p>Variables, Closures, DOM Events, ES6 Promises, and Async logic.</p>
                     <button type="button" class="btn btn-primary" onclick="openQuizSetup('javascript')">Start JS Quiz</button>
                 </div>
 
-                <!-- DBMS -->
+                <!-- Operating Systems -->
                 <div class="category-card">
-                    <div class="category-icon">🗄️</div>
-                    <h3>DBMS & SQL</h3>
-                    <p>SQL SELECT queries, Primary Keys, Normalization, ACID transactions, and Joins.</p>
-                    <button type="button" class="btn btn-primary" onclick="openQuizSetup('dbms')">Start DBMS Quiz</button>
+                    <div class="category-icon">⚙️</div>
+                    <h3>Operating Systems</h3>
+                    <p>Processes, Threads, Deadlocks, Virtual Memory, and CPU Scheduling.</p>
+                    <button type="button" class="btn btn-primary" onclick="openQuizSetup('os')">Start OS Quiz</button>
                 </div>
 
-                <!-- Computer Science -->
+                <!-- Computer Networks -->
                 <div class="category-card">
-                    <div class="category-icon">💻</div>
-                    <h3>Computer Science Core</h3>
-                    <p>Data Structures, Operating Systems, OSI Layers, IP Routing, and Algorithms.</p>
-                    <button type="button" class="btn btn-primary" onclick="openQuizSetup('cs')">Start CS Quiz</button>
+                    <div class="category-icon">🌐</div>
+                    <h3>Computer Networks</h3>
+                    <p>OSI 7-Layer Model, IP Routing, TCP vs. UDP, and Subnetting.</p>
+                    <button type="button" class="btn btn-primary" onclick="openQuizSetup('cn')">Start CN Quiz</button>
                 </div>
             </div>
         </section>
@@ -230,7 +274,7 @@
                 <div class="setup-form-grid">
                     <!-- Player Name -->
                     <div class="form-group full-width">
-                        <label for="setupPlayerName">Player Name / Handle</label>
+                        <label for="setupPlayerName">Player Name</label>
                         <input type="text" id="setupPlayerName" class="form-input" placeholder="Enter your name" required>
                     </div>
 
@@ -238,12 +282,14 @@
                     <div class="form-group">
                         <label for="setupCategory">Category</label>
                         <select id="setupCategory" class="form-select">
-                            <option value="java">Java Programming</option>
-                            <option value="oop">Object-Oriented Programming</option>
-                            <option value="html_css">HTML & CSS</option>
-                            <option value="javascript">JavaScript (ES6+)</option>
-                            <option value="dbms">DBMS & SQL</option>
-                            <option value="cs">Computer Science Core</option>
+                            <option value="java">Java</option>
+                            <option value="oop">OOP</option>
+                            <option value="dbms">DBMS</option>
+                            <option value="sql">SQL</option>
+                            <option value="html_css">HTML/CSS</option>
+                            <option value="javascript">JavaScript</option>
+                            <option value="os">Operating Systems</option>
+                            <option value="cn">Computer Networks</option>
                         </select>
                     </div>
 
@@ -264,15 +310,26 @@
                             <option value="5">5 Questions</option>
                             <option value="10" selected>10 Questions</option>
                             <option value="15">15 Questions</option>
+                            <option value="20">20 Questions</option>
+                        </select>
+                    </div>
+
+                    <!-- Mode -->
+                    <div class="form-group">
+                        <label for="setupMode">Mode</label>
+                        <select id="setupMode" class="form-select">
+                            <option value="exam" selected>Exam Mode (Full score at end)</option>
+                            <option value="learning">Learning Mode (Instant feedback per question)</option>
                         </select>
                     </div>
 
                     <!-- Timer -->
-                    <div class="form-group">
+                    <div class="form-group full-width">
                         <label for="setupTimer">Timer Duration</label>
                         <select id="setupTimer" class="form-select">
                             <option value="300" selected>5 Minutes</option>
                             <option value="600">10 Minutes</option>
+                            <option value="900">15 Minutes</option>
                             <option value="none">No Timer</option>
                         </select>
                     </div>
@@ -280,7 +337,7 @@
 
                 <div style="text-align: center;">
                     <button type="submit" class="btn btn-primary" style="padding: 1rem 3rem; font-size: 1.05rem;">
-                        🎯 Start Test
+                        🎯 Start Quiz
                     </button>
                 </div>
             </form>
@@ -312,38 +369,53 @@
                 <div class="progress-bar-fill" id="dashProgressBarFill"></div>
             </div>
 
-            <!-- Dashboard Grid (Left Area + Right Side Panel) -->
+            <!-- Dashboard Grid (Left Main Area + Right Side Panel) -->
             <div class="dashboard-grid">
-                <!-- Left Question Area -->
+                <!-- Left Main Question Area -->
                 <div class="question-card-box">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 8px;">
                         <span class="badge badge-info" id="qNumberBadge">Question 1</span>
-                        <button type="button" class="btn btn-outline" id="toggleHintBtn" onclick="toggleHint()">💡 Need a Hint?</button>
+                        <div style="display: flex; gap: 8px;">
+                            <button type="button" class="btn btn-outline" id="bookmarkBtn" onclick="toggleBookmarkCurrent()">📌 Bookmark</button>
+                            <button type="button" class="btn btn-outline" id="toggleHintBtn" onclick="toggleHint()">💡 Need a Hint?</button>
+                        </div>
                     </div>
 
-                    <!-- Hint Card Box -->
+                    <!-- Pre-submission Hint Card -->
                     <div class="hint-card-box" id="qHintCard">
                         <strong>💡 Hint:</strong> <span id="qHintText">Clue text goes here...</span>
                     </div>
 
                     <h3 class="q-text" id="qText">Loading question...</h3>
 
-                    <!-- Selectable Answer Cards -->
+                    <!-- Selectable Options Grid -->
                     <div class="options-list" id="qOptionsGrid"></div>
 
-                    <!-- Action Buttons Bar -->
+                    <!-- Learning Mode Instant Feedback Box -->
+                    <div id="learningFeedbackBox" style="display: none; margin-bottom: 1.5rem;"></div>
+
+                    <!-- Personal Note Box -->
+                    <div style="margin-bottom: 1.5rem;">
+                        <label for="questionNoteInput" style="font-size: 0.85rem; font-weight: 700; color: var(--text-secondary);">📝 Personal Note for this Question:</label>
+                        <div style="display: flex; gap: 8px; margin-top: 4px;">
+                            <input type="text" id="questionNoteInput" class="form-input" style="flex: 1;" placeholder="e.g. Remember difference between ArrayList vs HashSet">
+                            <button type="button" class="btn btn-secondary" onclick="saveCurrentNote()">Save Note</button>
+                        </div>
+                    </div>
+
+                    <!-- Navigation Action Buttons Bar -->
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 2rem; flex-wrap: wrap; gap: 10px;">
                         <button type="button" class="btn btn-outline" id="markReviewBtn" onclick="toggleMarkForReview()">🔖 Mark for Review</button>
                         
                         <div style="display: flex; gap: 10px;">
                             <button type="button" class="btn btn-secondary" id="prevQBtn" onclick="prevQuestion()">⬅️ Previous</button>
                             <button type="button" class="btn btn-secondary" id="nextQBtn" onclick="nextQuestion()">Next ➡️</button>
-                            <button type="button" class="btn btn-primary" id="submitQuizBtn" onclick="submitQuiz()">✅ Submit Test</button>
+                            <button type="button" class="btn btn-primary" id="submitQuizBtn" onclick="submitQuiz()">✅ Submit Quiz</button>
                         </div>
                     </div>
                 </div>
 
-                <!-- Right Side Panel (Question Palette & Stats) -->
+                <!-- Right Side Panel (Question Navigator Palette & Counters) -->
                 <div class="palette-box">
                     <h4>Question Navigator</h4>
                     <div class="palette-grid" id="questionPalette"></div>
@@ -419,15 +491,19 @@
                     <div class="metric-value" id="resTimeTaken">0m 0s</div>
                     <div class="metric-label">Time Taken</div>
                 </div>
+                <div class="metric-box">
+                    <div class="metric-value" style="color: var(--warning-color);" id="resXPGained">+0 XP</div>
+                    <div class="metric-label">XP Earned</div>
+                </div>
             </div>
 
-            <!-- Retake & Action Buttons -->
+            <!-- Retake & Navigation Buttons -->
             <div class="btn-group">
-                <button type="button" class="btn btn-primary" onclick="reviewAnswers()">🔍 Review Answers & Explanations</button>
-                <button type="button" class="btn btn-warning" onclick="reviewWrongAnswersOnly()">❌ Questions to Review</button>
+                <button type="button" class="btn btn-primary" onclick="reviewAnswers()">🔍 Review Answers & Solutions</button>
+                <button type="button" class="btn btn-warning" onclick="reviewWrongAnswersOnly()">❌ Mistake Review</button>
                 <button type="button" class="btn btn-secondary" onclick="startWeakPractice()">🎯 Practice Weak Questions</button>
                 <button type="button" class="btn btn-secondary" onclick="openQuizSetup()">🔄 Retake Quiz</button>
-                <a href="#userDashboard" class="btn btn-outline">📊 Back to Dashboard</a>
+                <button type="button" class="btn btn-outline" onclick="showSection('userDashboardSection')">📊 Back to Dashboard</button>
             </div>
         </section>
 
@@ -435,8 +511,8 @@
         <section id="reviewSection" class="review-section">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 10px;">
                 <div>
-                    <h2>Answer Key & Explanations</h2>
-                    <p style="color: var(--text-secondary);">Comprehensive breakdown of every question, user answers, correct answers, step-by-step solutions, and concepts.</p>
+                    <h2>Answer Key & Solutions</h2>
+                    <p style="color: var(--text-secondary);">Comprehensive breakdown showing WHY, HOW TO SOLVE, CONCEPT, and QUICK TIP for every question.</p>
                 </div>
                 <button type="button" class="btn btn-secondary" onclick="backToResults()">⬅️ Back to Results</button>
             </div>
@@ -444,12 +520,12 @@
             <div id="reviewQuestionsList"></div>
         </section>
 
-        <!-- Dedicated Wrong Answer Review Section -->
+        <!-- Dedicated Mistake Review Section -->
         <section id="weakReviewSection" class="review-section">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 10px;">
                 <div>
-                    <h2>Questions to Review</h2>
-                    <p style="color: var(--text-secondary);">Focus strictly on the questions you answered incorrectly or left unanswered.</p>
+                    <h2>Mistake Review</h2>
+                    <p style="color: var(--text-secondary);">Focus strictly on questions you answered incorrectly.</p>
                 </div>
                 <div style="display: flex; gap: 10px;">
                     <button type="button" class="btn btn-primary" onclick="startWeakPractice()">🎯 Practice These Questions</button>
@@ -460,11 +536,50 @@
             <div id="weakReviewList"></div>
         </section>
 
+        <!-- Daily Challenge Section -->
+        <section id="dailyChallengeSection" style="margin-bottom: 4rem;">
+            <div class="section-header">
+                <h2>📅 Daily Challenge</h2>
+                <p>Complete today's 5 random questions to maintain your streak and earn +50 bonus XP!</p>
+            </div>
+
+            <div class="category-card" style="max-width: 650px; margin: 0 auto; text-align: center;">
+                <div style="font-size: 3.5rem; margin-bottom: 1rem;">🔥</div>
+                <h3 style="margin-bottom: 0.5rem;">Today's Daily Challenge</h3>
+                <span id="dailyStatusBadge" class="badge badge-info" style="margin-bottom: 1.5rem;">⏱️ Available Today (+50 XP Reward)</span>
+                <p style="margin-bottom: 2rem;">5 random questions across all topics. Limit 1 completion per calendar day.</p>
+                <button type="button" class="btn btn-primary" id="dailyStartBtn" onclick="startDailyChallenge()">🚀 Start Daily Challenge</button>
+            </div>
+        </section>
+
+        <!-- Bookmarks Section -->
+        <section id="bookmarksSection" style="margin-bottom: 4rem;">
+            <div class="section-header">
+                <h2>📌 Bookmarked Questions</h2>
+                <p>Review and practice questions you have saved for revision.</p>
+            </div>
+
+            <div id="bookmarksList"></div>
+            <div id="bookmarksEmptyState" style="text-align: center; padding: 2rem; color: var(--text-secondary); display: none;">
+                No questions bookmarked yet. Click the 📌 Bookmark button during a test to save questions here!
+            </div>
+        </section>
+
+        <!-- Achievements & Badges Section -->
+        <section id="achievementsSection" style="margin-bottom: 4rem;">
+            <div class="section-header">
+                <h2>🏆 Achievements & Badges</h2>
+                <p>Unlock badges by completing quizzes, maintaining streaks, and achieving high accuracy.</p>
+            </div>
+
+            <div class="achievements-grid" id="achievementsGrid"></div>
+        </section>
+
         <!-- Local Leaderboard Section -->
-        <section id="leaderboard" style="padding-top: 2rem;">
+        <section id="leaderboardSection" style="padding-top: 2rem;">
             <div class="section-header">
                 <h2>🏆 Local Leaderboard</h2>
-                <p>Top scores and performance metrics stored locally in your browser.</p>
+                <p>Top scores and XP rankings stored locally in your browser.</p>
             </div>
 
             <div class="top3-container" id="top3Container"></div>
@@ -475,9 +590,9 @@
                         <tr>
                             <th>Rank</th>
                             <th>Player</th>
+                            <th>Level</th>
+                            <th>Total XP</th>
                             <th>Category</th>
-                            <th>Difficulty</th>
-                            <th>Score</th>
                             <th>Percentage</th>
                             <th>Date</th>
                         </tr>
@@ -488,7 +603,7 @@
         </section>
 
         <!-- Quiz History Section -->
-        <section id="history" style="padding-top: 2rem;">
+        <section id="historySection" style="padding-top: 2rem;">
             <div class="section-header">
                 <h2>📜 Quiz Attempt History</h2>
                 <p>Detailed log of your previous test attempts.</p>
@@ -520,34 +635,70 @@
             </div>
         </section>
 
-        <!-- How It Works Section -->
-        <section style="padding-top: 2rem;">
+        <!-- Profile Section -->
+        <section id="profileSection" style="margin-bottom: 4rem;">
             <div class="section-header">
-                <h2>How It Works</h2>
-                <p>3 steps to improve your software development knowledge.</p>
+                <h2>👤 User Profile</h2>
+                <p>Manage your handle name and view your gamified progression.</p>
             </div>
 
-            <div class="steps-grid">
-                <div class="step-card">
-                    <div class="step-num">01</div>
-                    <h3>Choose Your Quiz</h3>
-                    <p>Select category, difficulty level, and timer preferences.</p>
+            <div class="category-card" style="max-width: 650px; margin: 0 auto;">
+                <div style="text-align: center; margin-bottom: 2rem;">
+                    <div style="font-size: 3.5rem; margin-bottom: 0.5rem;">👤</div>
+                    <h3 id="profName">Developer</h3>
+                    <span class="badge badge-warning" id="profLevel">Level 1: Beginner</span>
                 </div>
-                <div class="step-card">
-                    <div class="step-num">02</div>
-                    <h3>Challenge Yourself</h3>
-                    <p>Use hints, mark questions for review, and navigate with the side palette.</p>
+
+                <div class="dash-metrics-grid" style="margin-bottom: 2rem;">
+                    <div class="dash-metric-card"><div class="val" id="profXP">0 XP</div><div class="lbl">Total XP</div></div>
+                    <div class="dash-metric-card"><div class="val" id="profStreak">🔥 1 Day</div><div class="lbl">Streak</div></div>
+                    <div class="dash-metric-card"><div class="val" id="profQuizzes">0</div><div class="lbl">Quizzes</div></div>
+                    <div class="dash-metric-card"><div class="val" id="profBest">0</div><div class="lbl">Best Score</div></div>
                 </div>
-                <div class="step-card">
-                    <div class="step-num">03</div>
-                    <h3>Check Your Performance</h3>
-                    <p>Review step-by-step solutions, identify weak areas, and practice weak questions.</p>
+
+                <form onsubmit="updateProfileName(event)">
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label for="profileNameInput">Edit Display Name</label>
+                        <input type="text" id="profileNameInput" class="form-input" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Save Profile Name</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- Settings Section -->
+        <section id="settingsSection" style="margin-bottom: 4rem;">
+            <div class="section-header">
+                <h2>⚙️ Application Settings</h2>
+                <p>Configure preferences and data reset controls.</p>
+            </div>
+
+            <div class="category-card" style="max-width: 650px; margin: 0 auto;">
+                <h3 style="margin-bottom: 1.5rem;">Preferences</h3>
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+                    <div>
+                        <strong>Dark / Light Theme Mode</strong>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary);">Toggle between dark and light themes</div>
+                    </div>
+                    <button type="button" class="btn btn-outline" onclick="document.getElementById('themeToggleBtn').click()">Toggle Theme</button>
+                </div>
+
+                <hr style="border-color: var(--border-color); margin: 1.5rem 0;">
+
+                <h3 style="color: var(--danger-color); margin-bottom: 1rem;">Reset Application Data</h3>
+                <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
+                    Warning: Resetting will clear all your stored XP, Level progress, Badges, History, and Bookmarks.
+                </p>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button type="button" class="btn btn-outline" onclick="clearUserHistory()">Clear History Only</button>
+                    <button type="button" class="btn btn-warning" onclick="resetAllData()">⚠️ Reset All Data</button>
                 </div>
             </div>
         </section>
 
         <!-- About Section -->
-        <section id="about" class="category-card" style="margin-bottom: 4rem;">
+        <section id="aboutSection" class="category-card" style="margin-bottom: 4rem;">
             <h3>About QuizSystem</h3>
             <p>
                 QuizSystem is an interactive learning and assessment platform that helps users test their knowledge across programming and computer science topics. It offers multiple categories, difficulty levels, timed tests, instant feedback, hints, step-by-step explanations, performance analytics, and weak-area practice sessions.
@@ -555,7 +706,7 @@
         </section>
 
         <!-- FAQ Section -->
-        <section id="faq" style="padding-top: 1rem;">
+        <section id="faqSection" style="padding-top: 1rem;">
             <div class="section-header">
                 <h2>Frequently Asked Questions</h2>
                 <p>Common questions about QuizSystem.</p>
@@ -568,25 +719,21 @@
                 </div>
                 <div class="faq-item">
                     <div class="faq-question">Can I choose a category and difficulty? <span>➕</span></div>
-                    <div class="faq-answer">Yes! You can choose from Java, OOP, HTML & CSS, JavaScript, DBMS, and Computer Science across Easy, Medium, and Hard difficulties.</div>
+                    <div class="faq-answer">Yes! You can choose from Java, OOP, DBMS, SQL, HTML/CSS, JavaScript, OS, and Computer Networks across Easy, Medium, and Hard difficulties.</div>
                 </div>
                 <div class="faq-item">
                     <div class="faq-question">Is there a timer for the quiz? <span>➕</span></div>
-                    <div class="faq-answer">Yes, you can choose 5 minutes, 10 minutes, or No Timer mode.</div>
+                    <div class="faq-answer">Yes, you can choose 5 minutes, 10 minutes, 15 minutes, or No Timer mode.</div>
                 </div>
                 <div class="faq-item">
                     <div class="faq-question">Are my results and history saved? <span>➕</span></div>
                     <div class="faq-answer">Yes, your attempt history and leaderboard rankings are saved locally in your browser via LocalStorage.</div>
                 </div>
-                <div class="faq-item">
-                    <div class="faq-question">Can I retry a quiz or practice weak questions? <span>➕</span></div>
-                    <div class="faq-answer">Yes! You can retake any quiz or click 'Practice Weak Questions' to launch a targeted practice test on topics you missed.</div>
-                </div>
             </div>
         </section>
 
         <!-- Contact Section -->
-        <section id="contact" class="contact-grid">
+        <section id="contactSection" class="contact-grid">
             <div>
                 <h3 style="font-size: 1.5rem; color: var(--text-primary); margin-bottom: 1rem;">Get In Touch</h3>
                 <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Have questions, feedback, or suggestions for new quiz topics?</p>
@@ -618,24 +765,24 @@
             <div>
                 <h3 class="footer-brand">📝 Quiz<span>System</span></h3>
                 <p style="font-size: 0.9rem; line-height: 1.6;">
-                    Learn. Practice. Compete. Improve. An advanced online quiz platform for developers.
+                    Challenge Yourself. Learn Smarter. An advanced online quiz platform for developers.
                 </p>
             </div>
             <div>
                 <h4 style="color: #ffffff; font-size: 1rem; margin-bottom: 1rem;">Quick Links</h4>
                 <ul class="footer-links">
-                    <li><a href="#home">Home</a></li>
-                    <li><a href="#userDashboard">Dashboard</a></li>
-                    <li><a href="#categories">Categories</a></li>
-                    <li><a href="#leaderboard">Leaderboard</a></li>
-                    <li><a href="#history">History</a></li>
+                    <li><a href="javascript:void(0)" onclick="showSection('landingSection')">Home</a></li>
+                    <li><a href="javascript:void(0)" onclick="showSection('userDashboardSection')">Dashboard</a></li>
+                    <li><a href="javascript:void(0)" onclick="showSection('categoriesSection')">Categories</a></li>
+                    <li><a href="javascript:void(0)" onclick="showSection('leaderboardSection')">Leaderboard</a></li>
+                    <li><a href="javascript:void(0)" onclick="showSection('historySection')">History</a></li>
                 </ul>
             </div>
             <div>
                 <h4 style="color: #ffffff; font-size: 1rem; margin-bottom: 1rem;">Legal</h4>
                 <ul class="footer-links">
-                    <li><a href="#home">Privacy Policy</a></li>
-                    <li><a href="#home">Terms of Service</a></li>
+                    <li><a href="javascript:void(0)" onclick="showSection('landingSection')">Privacy Policy</a></li>
+                    <li><a href="javascript:void(0)" onclick="showSection('landingSection')">Terms of Service</a></li>
                 </ul>
             </div>
         </div>
