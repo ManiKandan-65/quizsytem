@@ -15,7 +15,7 @@ The **Online Quiz System** allows students and learners to test their technical 
 - 🚫 **No external database required** (Questions are stored cleanly in-memory using Java objects).
 - 🎨 **Modern White & Dark-Blue UI** with responsive card-based layout.
 - ⚡ **Pure Java Servlet & JSP** architecture following standard MVC principles.
-- ☁️ **Cloud Deployment Ready** (Includes `Dockerfile` & Maven WAR configuration for instant cloud hosting).
+- ☁️ **Cloud Deployment Ready** (Configured with dynamic runtime port binding for Render.com & Railway).
 
 ---
 
@@ -23,12 +23,12 @@ The **Online Quiz System** allows students and learners to test their technical 
 
 | Technology | Purpose |
 | :--- | :--- |
-| **Java (JDK 8+)** | Core backend programming language & quiz evaluation logic |
+| **Java (JDK 17)** | Core backend programming language & quiz evaluation logic |
 | **Java Servlets (`javax.servlet`)** | Server-side request handling & routing (`QuizServlet.java`) |
 | **JavaServer Pages (JSP)** | Dynamic UI rendering (`index.jsp`, `quiz.jsp`, `result.jsp`) |
 | **HTML5** | Page structure & semantic form elements |
 | **CSS3** | Custom styling, glassmorphism, responsive cards & button effects |
-| **Apache Tomcat (v8.5 / v9 / v10)** | Web application container & HTTP web server |
+| **Apache Tomcat (v9)** | Web application container & HTTP web server |
 | **Maven & Docker** | Build tool and cloud container configuration |
 
 ---
@@ -64,7 +64,7 @@ The **Online Quiz System** allows students and learners to test their technical 
 ```text
 online-quiz-system/
 ├── pom.xml                               # Maven Project Descriptor
-├── Dockerfile                            # Cloud Container Build Descriptor (Tomcat 9)
+├── Dockerfile                            # Production Dockerfile (Tomcat 9 + Java 17)
 ├── .dockerignore                         # Docker Build Exclusion Rules
 ├── README.md                             # Project Documentation & Deployment Guide
 ├── target/
@@ -142,52 +142,39 @@ To compile all Java classes and build the `.war` package from the command line:
    target/online-quiz-system.war
    ```
 
-*(Note: The project is already compiled and `target/online-quiz-system.war` is generated).*
-
 ---
 
 ### 3. Cloud Deployment Instructions (Getting a Public HTTPS Web Link)
 
-To share your quiz application with anyone on the internet, deploy it using a free cloud hosting platform like **Render** or **Railway**.
-
 #### Recommended Platform: Render.com (Free Web Service)
 
-**Step 1: Push your project to GitHub**
-1. Create a free account on [GitHub.com](https://github.com).
-2. Create a new public repository named `online-quiz-system`.
-3. Open terminal in the project folder and push your code to GitHub:
-   ```bash
-   git init
-   git add .
-   git commit -m "Initial commit - Online Quiz System"
-   git branch -M main
-   git remote add origin https://github.com/YOUR_USERNAME/online-quiz-system.git
-   git push -u origin main
-   ```
+**Step 1: Push latest project files to GitHub**
+```bash
+git add .
+git commit -m "Fix Render deployment: Runtime PORT substitution and dual WAR path mapping"
+git push origin main
+```
 
-**Step 2: Deploy on Render**
-1. Create a free account on [Render.com](https://render.com).
-2. Click **New +** -> Select **Web Service**.
-3. Connect your GitHub account and select your `online-quiz-system` repository.
-4. Fill in the deployment details:
-   - **Name**: `online-quiz-system`
-   - **Environment / Runtime**: **Docker** (Render will automatically detect the included `Dockerfile`).
-   - **Plan**: **Free**.
-5. Click **Create Web Service**.
-6. Render will automatically build the Maven project inside Tomcat and deploy your application.
+**Step 2: Deploy / Trigger Build on Render**
+1. Log in to [Render.com](https://render.com).
+2. Go to your **`online-quiz-system`** service.
+3. Click **Manual Deploy** -> **Clear build cache & deploy**.
+4. Render will build the container and substitute the dynamic runtime `$PORT` into Tomcat's `server.xml`.
 
 ---
 
-### 4. How to Access the Final Public URL
+### 4. How to Access the Live Deployed Application
 
-Once the deployment process completes on Render (usually takes 1-2 minutes):
-1. Render will display your live project dashboard with a green **Deployed** status badge.
-2. At the top left of your Render dashboard, you will see your unique **Public HTTPS Web Link**, for example:
-   ```text
-   https://online-quiz-system.onrender.com
-   ```
-3. Copy and open this URL in any browser on your computer or mobile phone.
-4. Share this link with your interviewer, teachers, or friends to demonstrate your live deployed Java Servlet web application!
+Once deployment completes (approx 1-2 minutes), your application is accessible at **both** URLs:
+
+- **Root URL (Primary)**:
+  ```text
+  https://online-quiz-system.onrender.com/
+  ```
+- **Context Path URL (Secondary)**:
+  ```text
+  https://online-quiz-system.onrender.com/online-quiz-system/
+  ```
 
 ---
 
