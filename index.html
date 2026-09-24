@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuizSystem - Test Your Knowledge Online</title>
+    <meta name="description" content="QuizSystem is a simple and interactive online quiz platform designed to test your programming knowledge.">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- Navbar Navigation -->
+    <header class="navbar">
+        <div class="navbar-container">
+            <a href="#home" class="navbar-brand">
+                📝 Quiz<span>System</span>
+            </a>
+
+            <button class="hamburger" id="hamburger" aria-label="Toggle navigation menu">
+                ☰
+            </button>
+
+            <nav>
+                <ul class="nav-menu" id="navMenu">
+                    <li><a href="#home" class="nav-link">Home</a></li>
+                    <li><a href="#features" class="nav-link">Features</a></li>
+                    <li><a href="#about" class="nav-link">About</a></li>
+                    <li><a href="#contact" class="nav-link">Contact</a></li>
+                    <li><a href="#quiz" class="nav-btn">Start Quiz</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero-section">
+        <div class="hero-container">
+            <div class="hero-content">
+                <span class="hero-badge">🚀 Interactive Learning Platform</span>
+                <h1 class="hero-title">Test Your <span>Knowledge</span></h1>
+                <p class="hero-subtitle">
+                    Challenge yourself with interactive quizzes and discover how much you know about Core Java, Web Development, and Computer Science.
+                </p>
+                <div class="hero-buttons">
+                    <a href="#quiz" class="btn btn-primary">Start Quiz</a>
+                    <a href="#about" class="btn btn-outline">Learn More</a>
+                </div>
+            </div>
+
+            <!-- Hero CSS Card Preview -->
+            <div class="hero-card-preview">
+                <div class="preview-header">
+                    <span class="preview-tag">Live Preview</span>
+                    <div class="preview-dots">
+                        <span class="dot"></span>
+                        <span class="dot"></span>
+                        <span class="dot"></span>
+                    </div>
+                </div>
+                <h4 class="preview-title">Question 1 of 10</h4>
+                <p style="color: #94a3b8; margin-bottom: 1rem; font-size: 0.95rem;">
+                    Which language defines web page structure?
+                </p>
+                <div class="preview-options">
+                    <div class="preview-opt active">A) HTML (Correct)</div>
+                    <div class="preview-opt">B) CSS</div>
+                    <div class="preview-opt">C) JavaScript</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content Container -->
+    <main class="main-container">
+
+        <!-- Features Section -->
+        <section id="features" style="padding-top: 2rem;">
+            <div class="section-title">
+                <h2>Why Use QuizSystem?</h2>
+                <p>Designed for students and beginners to learn and evaluate skills effectively.</p>
+            </div>
+
+            <div class="features-grid">
+                <!-- Feature 1 -->
+                <div class="feature-card">
+                    <div class="feature-icon">📝</div>
+                    <h3>Multiple Choice</h3>
+                    <p>Handcrafted 10 multiple-choice questions covering core programming fundamentals.</p>
+                </div>
+
+                <!-- Feature 2 -->
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Instant Results</h3>
+                    <p>Receive immediate score feedback and detailed metrics right after submission.</p>
+                </div>
+
+                <!-- Feature 3 -->
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>Track Your Score</h3>
+                    <p>View your total score, correct vs. wrong answers, and percentage calculation.</p>
+                </div>
+
+                <!-- Feature 4 -->
+                <div class="feature-card">
+                    <div class="feature-icon">💡</div>
+                    <h3>Learn & Improve</h3>
+                    <p>Retry the quiz as many times as you want to strengthen your core concepts.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- About Section -->
+        <section id="about" class="about-card">
+            <div style="font-size: 3.5rem; background: var(--accent-light); padding: 1.5rem; border-radius: 16px;">
+                🎯
+            </div>
+            <div class="about-content">
+                <h3>About QuizSystem</h3>
+                <p>
+                    QuizSystem is a simple and interactive online quiz platform designed to help users test their knowledge through multiple-choice questions and receive instant results.
+                </p>
+                <p style="font-size: 0.95rem; color: var(--text-muted);">
+                    Built purely with responsive HTML5, CSS3, and JavaScript, ensuring fast performance across all devices and browsers.
+                </p>
+            </div>
+        </section>
+
+        <!-- Quiz Section -->
+        <section id="quiz" class="quiz-wrapper">
+            <div class="quiz-header">
+                <div>
+                    <h2 class="quiz-header-title">Knowledge Assessment Quiz</h2>
+                    <p style="color: var(--text-secondary); font-size: 0.95rem;">Select one answer per question and click Submit Quiz when finished.</p>
+                </div>
+                <span class="badge" id="quizProgressBadge">0 of 10 Answered</span>
+            </div>
+
+            <!-- Quiz Progress Bar -->
+            <div class="quiz-progress-bar-wrap">
+                <div class="quiz-progress-fill" id="quizProgressFill"></div>
+            </div>
+
+            <!-- Quiz Form -->
+            <form id="quizForm" onsubmit="submitQuiz(event)">
+                <!-- Questions injected dynamically via app.js -->
+                <div id="questionsContainer"></div>
+
+                <div style="text-align: center; margin-top: 2rem;">
+                    <button type="submit" class="btn btn-primary" style="padding: 1rem 3rem; font-size: 1.1rem;">
+                        ✅ Submit Quiz
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <!-- Result Section -->
+        <section id="resultSection" class="result-card">
+            <span class="result-badge">🎉 Performance Report</span>
+            <h2 style="font-size: 2.2rem; font-weight: 800; color: var(--primary-dark); margin-bottom: 0.5rem;">
+                Quiz Result Summary
+            </h2>
+
+            <!-- Feedback Banner -->
+            <div class="feedback-banner" id="resFeedback">
+                Good Job!
+            </div>
+
+            <!-- Score Progress Bar -->
+            <div style="display: flex; justify-content: space-between; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.5rem;">
+                <span>Score Percentage</span>
+                <span id="resPercentage">0%</span>
+            </div>
+            <div class="quiz-progress-bar-wrap" style="height: 12px; margin-bottom: 2.5rem;">
+                <div class="quiz-progress-fill" id="resProgressBar" style="width: 0%;"></div>
+            </div>
+
+            <!-- Metrics Grid -->
+            <div class="metrics-grid">
+                <div class="metric-box">
+                    <div class="metric-value" id="resTotal">10</div>
+                    <div class="metric-label">Total Questions</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-value success" id="resCorrect">0</div>
+                    <div class="metric-label">Correct Answers</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-value danger" id="resWrong">0</div>
+                    <div class="metric-label">Wrong Answers</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-value" id="resScore">0 / 10</div>
+                    <div class="metric-label">Final Score</div>
+                </div>
+            </div>
+
+            <!-- Buttons -->
+            <div class="btn-group">
+                <button type="button" class="btn btn-primary" onclick="retryQuiz()">🔄 Retry Quiz</button>
+                <a href="#home" class="btn btn-secondary">🏠 Back to Home</a>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section id="contact" class="contact-grid">
+            <div class="contact-info">
+                <h3>Get In Touch</h3>
+                <p>Have questions, feedback, or suggestions for new quiz topics? Send us a message!</p>
+                <div class="contact-item">
+                    <div class="contact-icon">📧</div>
+                    <span>support@quizsystem.com</span>
+                </div>
+                <div class="contact-item">
+                    <div class="contact-icon">📍</div>
+                    <span>Global Online Learning Community</span>
+                </div>
+            </div>
+
+            <form class="contact-form" onsubmit="event.preventDefault(); alert('Thank you! Your message has been sent.'); this.reset();">
+                <div class="form-group">
+                    <label for="cName">Your Name</label>
+                    <input type="text" id="cName" class="form-input" placeholder="Enter your name" required>
+                </div>
+                <div class="form-group">
+                    <label for="cEmail">Your Email</label>
+                    <input type="email" id="cEmail" class="form-input" placeholder="Enter your email" required>
+                </div>
+                <div class="form-group">
+                    <label for="cMsg">Message</label>
+                    <textarea id="cMsg" class="form-input" placeholder="Enter your message..." required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Send Message</button>
+            </form>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div>
+                <h3 class="footer-brand">📝 Quiz<span>System</span></h3>
+                <p class="footer-desc">
+                    An interactive, beginner-friendly online quiz application built with HTML, CSS, and JavaScript.
+                </p>
+            </div>
+            <div class="footer-col">
+                <h4>Quick Links</h4>
+                <ul class="footer-links">
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#features">Features</a></li>
+                    <li><a href="#about">About</a></li>
+                    <li><a href="#quiz">Start Quiz</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Legal</h4>
+                <ul class="footer-links">
+                    <li><a href="#home">Privacy Policy</a></li>
+                    <li><a href="#home">Terms of Service</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 QuizSystem. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- App Logic Script -->
+    <script src="js/app.js"></script>
+</body>
+</html>
