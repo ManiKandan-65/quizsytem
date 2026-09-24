@@ -1,29 +1,34 @@
 # ==============================================================================
-# Dockerfile for Online Quiz System (Java + Apache Tomcat)
-# Suitable for free deployment on Render.com, Railway.app, Koyeb, or Fly.io
+# Dockerfile for Online Quiz System (Java 17 + Apache Tomcat 9)
+# Optimized for Render.com, Railway, Koyeb & Fly.io
 # ==============================================================================
 
-# Stage 1: Build application with Maven
-FROM maven:3.8.6-openjdk-11 AS builder
+# Stage 1: Build WAR application with Maven & OpenJDK 17
+FROM maven:3.9.6-eclipse-temurin-17 AS builder
 WORKDIR /app
 
 # Copy pom.xml and source code
 COPY pom.xml .
 COPY src ./src
 
-# Build WAR file
+# Build WAR package
 RUN mvn clean package -DskipTests
 
-# Stage 2: Serve application with official Apache Tomcat 9
-FROM tomcat:9.0-jre11-openjdk-slim
+# Stage 2: Production runtime with Apache Tomcat 9 on Java 17 (Eclipse Temurin - fixes cgroups v2 bug)
+FROM tomcat:9.0-jdk17-temurin
 
-# Remove default Tomcat web applications
+# Set default fallback HTTP port to 8080 if PORT environment variable is not passed
+ENV PORT=8080
+
+# Dynamically bind Tomcat HTTP port to Render's $PORT environment variable
+RUN sed -i 's/port="8080"/port="${env.PORT}"/g' /usr/local/tomcat/conf/server.xml
+
+# Remove default Tomcat sample web applications
 RUN rm -rf /usr/local/tomcat/webapps/*
 
-# Copy WAR file to Tomcat webapps directory as ROOT.war (serves at root domain /)
+# Copy compiled WAR file as ROOT.war (serves application directly at root path /)
 COPY --from=builder /app/target/online-quiz-system.war /usr/local/tomcat/webapps/ROOT.war
 
-# Expose HTTP Port
 EXPOSE 8080
 
 # Start Tomcat Server
