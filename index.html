@@ -1,32 +1,42 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QuizSystem - Test Your Knowledge Online</title>
-    <meta name="description" content="QuizSystem is a simple and interactive online quiz platform designed to test your programming knowledge.">
+    <title>QuizSystem - Challenge Your Knowledge</title>
+    <meta name="description" content="QuizSystem is an interactive online quiz platform designed to help users test their knowledge across programming and computer science topics.">
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
-    <!-- Navbar Navigation -->
+    <!-- Header Navbar -->
     <header class="navbar">
         <div class="navbar-container">
             <a href="#home" class="navbar-brand">
                 📝 Quiz<span>System</span>
             </a>
 
-            <button class="hamburger" id="hamburger" aria-label="Toggle navigation menu">
-                ☰
-            </button>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <!-- Theme Toggle Button -->
+                <button type="button" class="theme-toggle-btn" id="themeToggleBtn" title="Toggle Dark/Light Mode">
+                    <span id="themeIcon">🌙</span>
+                </button>
+
+                <button class="hamburger" id="hamburger" aria-label="Toggle navigation menu">
+                    ☰
+                </button>
+            </div>
 
             <nav>
                 <ul class="nav-menu" id="navMenu">
                     <li><a href="#home" class="nav-link">Home</a></li>
-                    <li><a href="#features" class="nav-link">Features</a></li>
+                    <li><a href="#categories" class="nav-link">Categories</a></li>
+                    <li><a href="#leaderboard" class="nav-link">Leaderboard</a></li>
+                    <li><a href="#history" class="nav-link">History</a></li>
                     <li><a href="#about" class="nav-link">About</a></li>
+                    <li><a href="#faq" class="nav-link">FAQ</a></li>
                     <li><a href="#contact" class="nav-link">Contact</a></li>
-                    <li><a href="#quiz" class="nav-btn">Start Quiz</a></li>
+                    <li><button type="button" class="btn btn-primary" onclick="openQuizSetup()">Start Quiz</button></li>
                 </ul>
             </nav>
         </div>
@@ -36,147 +46,301 @@
     <section id="home" class="hero-section">
         <div class="hero-container">
             <div class="hero-content">
-                <span class="hero-badge">🚀 Interactive Learning Platform</span>
-                <h1 class="hero-title">Test Your <span>Knowledge</span></h1>
+                <span class="hero-badge">🚀 Modern Interactive Learning Platform</span>
+                <h1 class="hero-title">Challenge Your <span>Knowledge</span></h1>
                 <p class="hero-subtitle">
-                    Challenge yourself with interactive quizzes and discover how much you know about Core Java, Web Development, and Computer Science.
+                    Learn. Practice. Compete. Improve. Test your skills in Java, JavaScript, Web Development, DBMS, OOP, and Computer Science with real-time feedback.
                 </p>
+
                 <div class="hero-buttons">
-                    <a href="#quiz" class="btn btn-primary">Start Quiz</a>
-                    <a href="#about" class="btn btn-outline">Learn More</a>
+                    <button type="button" class="btn btn-primary" onclick="openQuizSetup()">🚀 Start Quiz Now</button>
+                    <a href="#categories" class="btn btn-outline">Explore Quizzes</a>
+                </div>
+
+                <div class="hero-stats-row">
+                    <div class="stat-item">
+                        <h4>500+</h4>
+                        <p>Questions Pool</p>
+                    </div>
+                    <div class="stat-item">
+                        <h4>6</h4>
+                        <p>Tech Categories</p>
+                    </div>
+                    <div class="stat-item">
+                        <h4>3</h4>
+                        <p>Difficulty Levels</p>
+                    </div>
                 </div>
             </div>
 
-            <!-- Hero CSS Card Preview -->
+            <!-- Hero CSS Interactive Preview Card -->
             <div class="hero-card-preview">
-                <div class="preview-header">
-                    <span class="preview-tag">Live Preview</span>
-                    <div class="preview-dots">
-                        <span class="dot"></span>
-                        <span class="dot"></span>
-                        <span class="dot"></span>
-                    </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <span class="badge badge-info">Java Quiz</span>
+                    <span class="badge badge-warning">⏱️ 04:52</span>
                 </div>
-                <h4 class="preview-title">Question 1 of 10</h4>
-                <p style="color: #94a3b8; margin-bottom: 1rem; font-size: 0.95rem;">
-                    Which language defines web page structure?
-                </p>
-                <div class="preview-options">
-                    <div class="preview-opt active">A) HTML (Correct)</div>
-                    <div class="preview-opt">B) CSS</div>
-                    <div class="preview-opt">C) JavaScript</div>
+                <h4 style="font-size: 1.1rem; color: var(--text-primary); margin-bottom: 1rem;">
+                    Which Java collection class stores unique elements only?
+                </h4>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <div class="option-card" style="padding: 10px 14px; font-size: 0.9rem;">
+                        <span class="option-prefix">A</span>
+                        <span class="option-text-val">ArrayList</span>
+                    </div>
+                    <div class="option-card selected" style="padding: 10px 14px; font-size: 0.9rem;">
+                        <span class="option-prefix">B</span>
+                        <span class="option-text-val">HashSet (Selected)</span>
+                    </div>
+                    <div class="option-card" style="padding: 10px 14px; font-size: 0.9rem;">
+                        <span class="option-prefix">C</span>
+                        <span class="option-text-val">LinkedList</span>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Main Content Container -->
+    <!-- Main Container -->
     <main class="main-container">
 
-        <!-- Features Section -->
-        <section id="features" style="padding-top: 2rem;">
-            <div class="section-title">
-                <h2>Why Use QuizSystem?</h2>
-                <p>Designed for students and beginners to learn and evaluate skills effectively.</p>
+        <!-- Quiz Categories Section -->
+        <section id="categories">
+            <div class="section-header">
+                <h2>Explore Quiz Categories</h2>
+                <p>Choose your technical domain and start practicing immediately.</p>
             </div>
 
-            <div class="features-grid">
-                <!-- Feature 1 -->
-                <div class="feature-card">
-                    <div class="feature-icon">📝</div>
-                    <h3>Multiple Choice</h3>
-                    <p>Handcrafted 10 multiple-choice questions covering core programming fundamentals.</p>
+            <div class="categories-grid">
+                <!-- Java -->
+                <div class="category-card">
+                    <div class="category-icon">☕</div>
+                    <h3>Java Programming</h3>
+                    <p>Master Core Java, OOP principles, Collections framework, Threads, and Exception handling.</p>
+                    <div class="category-meta">
+                        <span>10 Questions</span>
+                        <span class="badge badge-info">Easy • Medium • Hard</span>
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="selectCategoryAndSetup('java')">Start Java Quiz</button>
                 </div>
 
-                <!-- Feature 2 -->
-                <div class="feature-card">
-                    <div class="feature-icon">⚡</div>
-                    <h3>Instant Results</h3>
-                    <p>Receive immediate score feedback and detailed metrics right after submission.</p>
+                <!-- HTML & CSS -->
+                <div class="category-card">
+                    <div class="category-icon">🎨</div>
+                    <h3>HTML & CSS</h3>
+                    <p>Test your knowledge of HTML5 semantic tags, CSS Flexbox, Grid, Box Model, and Selectors.</p>
+                    <div class="category-meta">
+                        <span>10 Questions</span>
+                        <span class="badge badge-info">Easy • Medium • Hard</span>
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="selectCategoryAndSetup('html_css')">Start HTML/CSS Quiz</button>
                 </div>
 
-                <!-- Feature 3 -->
-                <div class="feature-card">
-                    <div class="feature-icon">📊</div>
-                    <h3>Track Your Score</h3>
-                    <p>View your total score, correct vs. wrong answers, and percentage calculation.</p>
+                <!-- JavaScript -->
+                <div class="category-card">
+                    <div class="category-icon">⚡</div>
+                    <h3>JavaScript (ES6+)</h3>
+                    <p>Challenge yourself on ES6 features, Closures, DOM manipulation, Promises, and Async logic.</p>
+                    <div class="category-meta">
+                        <span>10 Questions</span>
+                        <span class="badge badge-info">Easy • Medium • Hard</span>
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="selectCategoryAndSetup('javascript')">Start JS Quiz</button>
                 </div>
 
-                <!-- Feature 4 -->
-                <div class="feature-card">
-                    <div class="feature-icon">💡</div>
-                    <h3>Learn & Improve</h3>
-                    <p>Retry the quiz as many times as you want to strengthen your core concepts.</p>
+                <!-- DBMS -->
+                <div class="category-card">
+                    <div class="category-icon">🗄️</div>
+                    <h3>DBMS & SQL</h3>
+                    <p>Practice SQL queries, Relational Primary/Foreign Keys, Normalization, ACID, and Joins.</p>
+                    <div class="category-meta">
+                        <span>10 Questions</span>
+                        <span class="badge badge-info">Easy • Medium • Hard</span>
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="selectCategoryAndSetup('dbms')">Start DBMS Quiz</button>
+                </div>
+
+                <!-- OOP -->
+                <div class="category-card">
+                    <div class="category-icon">🧩</div>
+                    <h3>Object-Oriented Programming</h3>
+                    <p>Deep dive into Encapsulation, Abstraction, Polymorphism, Inheritance, and Interfaces.</p>
+                    <div class="category-meta">
+                        <span>10 Questions</span>
+                        <span class="badge badge-info">Easy • Medium • Hard</span>
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="selectCategoryAndSetup('oop')">Start OOP Quiz</button>
+                </div>
+
+                <!-- Computer Science -->
+                <div class="category-card">
+                    <div class="category-icon">💻</div>
+                    <h3>Computer Science Core</h3>
+                    <p>Cover fundamental Data Structures, Operating Systems, Computer Networks, and Algorithms.</p>
+                    <div class="category-meta">
+                        <span>10 Questions</span>
+                        <span class="badge badge-info">Easy • Medium • Hard</span>
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="selectCategoryAndSetup('cs')">Start CS Quiz</button>
                 </div>
             </div>
         </section>
 
-        <!-- About Section -->
-        <section id="about" class="about-card">
-            <div style="font-size: 3.5rem; background: var(--accent-light); padding: 1.5rem; border-radius: 16px;">
-                🎯
+        <!-- Quiz Setup Section -->
+        <section id="quizSetupSection" class="quiz-setup-card">
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <span class="badge badge-info">⚙️ Quiz Configuration</span>
+                <h2 style="font-size: 1.8rem; font-weight: 800; color: var(--text-primary); margin-top: 0.5rem;">
+                    Configure Your Quiz Attempt
+                </h2>
             </div>
-            <div class="about-content">
-                <h3>About QuizSystem</h3>
-                <p>
-                    QuizSystem is a simple and interactive online quiz platform designed to help users test their knowledge through multiple-choice questions and receive instant results.
-                </p>
-                <p style="font-size: 0.95rem; color: var(--text-muted);">
-                    Built purely with responsive HTML5, CSS3, and JavaScript, ensuring fast performance across all devices and browsers.
-                </p>
-            </div>
-        </section>
 
-        <!-- Quiz Section -->
-        <section id="quiz" class="quiz-wrapper">
-            <div class="quiz-header">
-                <div>
-                    <h2 class="quiz-header-title">Knowledge Assessment Quiz</h2>
-                    <p style="color: var(--text-secondary); font-size: 0.95rem;">Select one answer per question and click Submit Quiz when finished.</p>
+            <form onsubmit="startQuiz(event)">
+                <div class="setup-form-grid">
+                    <!-- Player Name -->
+                    <div class="form-group full-width">
+                        <label for="setupPlayerName">Your Name / Player Handle</label>
+                        <input type="text" id="setupPlayerName" class="form-input" placeholder="e.g. Manikandan" required>
+                    </div>
+
+                    <!-- Category -->
+                    <div class="form-group">
+                        <label for="setupCategory">Category</label>
+                        <select id="setupCategory" class="form-select">
+                            <option value="java">Java Programming</option>
+                            <option value="html_css">HTML & CSS</option>
+                            <option value="javascript">JavaScript (ES6+)</option>
+                            <option value="dbms">DBMS & SQL</option>
+                            <option value="oop">Object-Oriented Programming</option>
+                            <option value="cs">Computer Science Core</option>
+                        </select>
+                    </div>
+
+                    <!-- Difficulty -->
+                    <div class="form-group">
+                        <label for="setupDifficulty">Difficulty Level</label>
+                        <select id="setupDifficulty" class="form-select">
+                            <option value="Easy">Easy</option>
+                            <option value="Medium" selected>Medium</option>
+                            <option value="Hard">Hard</option>
+                        </select>
+                    </div>
+
+                    <!-- Number of Questions -->
+                    <div class="form-group">
+                        <label for="setupCount">Number of Questions</label>
+                        <select id="setupCount" class="form-select">
+                            <option value="5">5 Questions</option>
+                            <option value="10" selected>10 Questions</option>
+                            <option value="15">15 Questions</option>
+                        </select>
+                    </div>
+
+                    <!-- Timer -->
+                    <div class="form-group">
+                        <label for="setupTimer">Timer Duration</label>
+                        <select id="setupTimer" class="form-select">
+                            <option value="300" selected>5 Minutes</option>
+                            <option value="600">10 Minutes</option>
+                            <option value="none">No Timer</option>
+                        </select>
+                    </div>
                 </div>
-                <span class="badge" id="quizProgressBadge">0 of 10 Answered</span>
-            </div>
 
-            <!-- Quiz Progress Bar -->
-            <div class="quiz-progress-bar-wrap">
-                <div class="quiz-progress-fill" id="quizProgressFill"></div>
-            </div>
-
-            <!-- Quiz Form -->
-            <form id="quizForm" onsubmit="submitQuiz(event)">
-                <!-- Questions injected dynamically via app.js -->
-                <div id="questionsContainer"></div>
-
-                <div style="text-align: center; margin-top: 2rem;">
-                    <button type="submit" class="btn btn-primary" style="padding: 1rem 3rem; font-size: 1.1rem;">
-                        ✅ Submit Quiz
+                <div style="text-align: center;">
+                    <button type="submit" class="btn btn-primary" style="padding: 1rem 3rem; font-size: 1.05rem;">
+                        🎯 Start Quiz
                     </button>
                 </div>
             </form>
         </section>
 
-        <!-- Result Section -->
+        <!-- Advanced Quiz Dashboard -->
+        <section id="quizDashboard" class="quiz-dashboard">
+            <!-- Header Bar -->
+            <div class="dash-header">
+                <div>
+                    <h3 style="font-size: 1.3rem; font-weight: 800; color: var(--text-primary);" id="dashCategory">Java</h3>
+                    <div class="dash-meta-tags">
+                        <span style="font-size: 0.9rem; color: var(--text-secondary);">Player: <strong id="dashPlayerName">Player</strong></span>
+                        <span class="badge badge-info" id="dashDifficulty">Medium</span>
+                    </div>
+                </div>
+
+                <!-- Timer Badge -->
+                <div class="badge badge-info" id="dashTimerBadge" style="font-size: 1.1rem; padding: 8px 18px;">
+                    ⏱️ 05:00
+                </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 0.4rem;">
+                <span id="dashProgressText">Question 1 of 10</span>
+                <span>Quiz Progress</span>
+            </div>
+            <div class="progress-bar-wrap">
+                <div class="progress-bar-fill" id="dashProgressBarFill"></div>
+            </div>
+
+            <!-- Dashboard Grid (Question Area + Question Palette) -->
+            <div class="dashboard-grid">
+                <!-- Question Box -->
+                <div class="question-card-box">
+                    <span class="badge badge-info" id="qNumberBadge" style="margin-bottom: 1rem; display: inline-block;">Question 1</span>
+                    <h3 class="q-text" id="qText">Loading question...</h3>
+
+                    <!-- Selectable Option Cards -->
+                    <div class="options-list" id="qOptionsGrid"></div>
+
+                    <!-- Navigation Action Buttons -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 2rem;">
+                        <button type="button" class="btn btn-secondary" id="prevQBtn" onclick="prevQuestion()">⬅️ Previous</button>
+                        <div style="display: flex; gap: 10px;">
+                            <button type="button" class="btn btn-secondary" id="nextQBtn" onclick="nextQuestion()">Next ➡️</button>
+                            <button type="button" class="btn btn-primary" id="submitQuizBtn" onclick="submitQuiz()">✅ Submit Quiz</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Question Palette -->
+                <div class="palette-box">
+                    <h4>Question Palette</h4>
+                    <div class="palette-grid" id="questionPalette"></div>
+
+                    <div class="palette-legend">
+                        <div class="legend-item"><span class="legend-dot current"></span> Current Active</div>
+                        <div class="legend-item"><span class="legend-dot answered"></span> Answered</div>
+                        <div class="legend-item"><span class="legend-dot unanswered"></span> Unanswered</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Result Dashboard -->
         <section id="resultSection" class="result-card">
-            <span class="result-badge">🎉 Performance Report</span>
-            <h2 style="font-size: 2.2rem; font-weight: 800; color: var(--primary-dark); margin-bottom: 0.5rem;">
+            <span class="badge badge-success" id="resFeedbackBadge" style="font-size: 0.9rem; padding: 6px 18px; margin-bottom: 1rem; display: inline-block;">🎉 Performance Report</span>
+            
+            <h2 style="font-size: 2.2rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.5rem;">
                 Quiz Result Summary
             </h2>
+            <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
+                Player: <strong id="resPlayerName">Player</strong> • <span id="resCategory">Java</span> (<span id="resDifficulty">Medium</span>)
+            </p>
+
+            <!-- Circular SVG Score Visualization -->
+            <div class="score-circle-wrapper">
+                <svg class="score-circle-svg" viewBox="0 0 160 160">
+                    <circle class="score-circle-bg" cx="80" cy="80" r="70"></circle>
+                    <circle class="score-circle-progress" id="resCircleProgress" cx="80" cy="80" r="70"></circle>
+                </svg>
+                <div class="score-circle-text" id="resPercentage">0%</div>
+            </div>
 
             <!-- Feedback Banner -->
-            <div class="feedback-banner" id="resFeedback">
+            <div class="badge badge-info" id="resFeedback" style="font-size: 1.15rem; padding: 12px 24px; margin-bottom: 2rem; display: inline-block; width: 100%; max-width: 600px;">
                 Good Job!
             </div>
 
-            <!-- Score Progress Bar -->
-            <div style="display: flex; justify-content: space-between; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.5rem;">
-                <span>Score Percentage</span>
-                <span id="resPercentage">0%</span>
-            </div>
-            <div class="quiz-progress-bar-wrap" style="height: 12px; margin-bottom: 2.5rem;">
-                <div class="quiz-progress-fill" id="resProgressBar" style="width: 0%;"></div>
-            </div>
-
-            <!-- Metrics Grid -->
+            <!-- Detailed Metrics Grid -->
             <div class="metrics-grid">
                 <div class="metric-box">
                     <div class="metric-value" id="resTotal">10</div>
@@ -191,45 +355,217 @@
                     <div class="metric-label">Wrong Answers</div>
                 </div>
                 <div class="metric-box">
+                    <div class="metric-value" id="resUnanswered">0</div>
+                    <div class="metric-label">Unanswered</div>
+                </div>
+                <div class="metric-box">
                     <div class="metric-value" id="resScore">0 / 10</div>
                     <div class="metric-label">Final Score</div>
                 </div>
+                <div class="metric-box">
+                    <div class="metric-value" id="resAccuracy">0%</div>
+                    <div class="metric-label">Accuracy</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-value" id="resTimeTaken">0m 0s</div>
+                    <div class="metric-label">Time Taken</div>
+                </div>
             </div>
 
-            <!-- Buttons -->
+            <!-- Action Buttons -->
             <div class="btn-group">
-                <button type="button" class="btn btn-primary" onclick="retryQuiz()">🔄 Retry Quiz</button>
-                <a href="#home" class="btn btn-secondary">🏠 Back to Home</a>
+                <button type="button" class="btn btn-primary" onclick="reviewAnswers()">🔍 Review Answers</button>
+                <button type="button" class="btn btn-secondary" onclick="openQuizSetup()">🔄 Retry Quiz</button>
+                <a href="#leaderboard" class="btn btn-outline">🏆 View Leaderboard</a>
+                <a href="#home" class="btn btn-outline">🏠 Back to Home</a>
+            </div>
+        </section>
+
+        <!-- Question Review Section -->
+        <section id="reviewSection" class="review-section">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                <div>
+                    <h2>Question Review</h2>
+                    <p style="color: var(--text-secondary);">Detailed breakdown of your selected answers vs. correct answers.</p>
+                </div>
+                <button type="button" class="btn btn-secondary" onclick="backToResults()">⬅️ Back to Results</button>
+            </div>
+
+            <div id="reviewQuestionsList"></div>
+        </section>
+
+        <!-- Local Leaderboard Section -->
+        <section id="leaderboard" style="padding-top: 2rem;">
+            <div class="section-header">
+                <h2>🏆 Local Leaderboard</h2>
+                <p>Top player performances stored locally in your browser.</p>
+            </div>
+
+            <!-- Top 3 Podium Cards -->
+            <div class="top3-container" id="top3Container"></div>
+
+            <!-- Leaderboard Table -->
+            <div class="table-wrapper">
+                <table class="styled-table">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Player</th>
+                            <th>Category</th>
+                            <th>Difficulty</th>
+                            <th>Score</th>
+                            <th>Percentage</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboardTableBody"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- User Profile Dashboard & History Section -->
+        <section id="history" style="padding-top: 2rem;">
+            <div class="section-header">
+                <h2>📊 User Dashboard & History</h2>
+                <p id="userDashName">Your Quiz Attempt History & Analytics</p>
+            </div>
+
+            <!-- User Dashboard Summary Metrics -->
+            <div class="metrics-grid" style="margin-bottom: 2.5rem;">
+                <div class="metric-box">
+                    <div class="metric-value" id="userTotalCompleted">0</div>
+                    <div class="metric-label">Quizzes Completed</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-value success" id="userBestScore">0</div>
+                    <div class="metric-label">Best Score</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-value" id="userAvgPercentage">0%</div>
+                    <div class="metric-label">Avg Percentage</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-value" id="userTotalCorrect">0</div>
+                    <div class="metric-label">Total Correct</div>
+                </div>
+            </div>
+
+            <!-- History Table -->
+            <div class="table-wrapper">
+                <table class="styled-table">
+                    <thead>
+                        <tr>
+                            <th>Attempt</th>
+                            <th>Player</th>
+                            <th>Category</th>
+                            <th>Difficulty</th>
+                            <th>Score</th>
+                            <th>Percentage</th>
+                            <th>Time Taken</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTableBody"></tbody>
+                </table>
+                <div id="historyEmptyState" style="text-align: center; padding: 2rem; color: var(--text-secondary); display: none;">
+                    No quiz history recorded yet. Complete a quiz to view your performance history here!
+                </div>
+            </div>
+
+            <div style="text-align: center;">
+                <button type="button" class="btn btn-outline" onclick="clearUserHistory()">🗑️ Clear Quiz History</button>
+            </div>
+        </section>
+
+        <!-- How It Works Section -->
+        <section style="padding-top: 2rem;">
+            <div class="section-header">
+                <h2>How It Works</h2>
+                <p>3 simple steps to start testing and improving your knowledge.</p>
+            </div>
+
+            <div class="steps-grid">
+                <div class="step-card">
+                    <div class="step-num">01</div>
+                    <h3>Choose Your Quiz</h3>
+                    <p>Select your favorite category (Java, Web Dev, DBMS, OOP, CS) and set your preferred difficulty level and timer.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-num">02</div>
+                    <h3>Challenge Yourself</h3>
+                    <p>Answer questions using the interactive palette, track remaining time, and review before submitting.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-num">03</div>
+                    <h3>Check Your Performance</h3>
+                    <p>View detailed accuracy metrics, review detailed answer explanations, and climb the local leaderboard.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- About Section -->
+        <section id="about" class="category-card" style="margin-bottom: 4rem;">
+            <h3>About QuizSystem</h3>
+            <p>
+                QuizSystem is an interactive learning and assessment platform that helps users test their knowledge across programming and computer science topics. It offers customizable multiple categories, difficulty levels, timed quizzes, instant results, and local performance tracking.
+            </p>
+        </section>
+
+        <!-- FAQ Section -->
+        <section id="faq" style="padding-top: 1rem;">
+            <div class="section-header">
+                <h2>Frequently Asked Questions</h2>
+                <p>Everything you need to know about QuizSystem.</p>
+            </div>
+
+            <div class="faq-list">
+                <div class="faq-item">
+                    <div class="faq-question">How does the quiz work? <span>➕</span></div>
+                    <div class="faq-answer">Select a category and difficulty level, answer multiple-choice questions within the timer duration, and view instant score metrics upon submission.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">Can I choose a category and difficulty? <span>➕</span></div>
+                    <div class="faq-answer">Yes! You can choose from Java, HTML & CSS, JavaScript, DBMS, OOP, and Computer Science across Easy, Medium, and Hard difficulty levels.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">Is there a timer for the quiz? <span>➕</span></div>
+                    <div class="faq-answer">Yes, you can select between 5-minute, 10-minute, or No Timer options during quiz setup.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">Are my results and history saved? <span>➕</span></div>
+                    <div class="faq-answer">Your results and leaderboard rankings are automatically saved locally in your browser using LocalStorage.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">Can I retry a quiz? <span>➕</span></div>
+                    <div class="faq-answer">Absolutely! Questions and options are randomized on every new attempt so you can practice as many times as you like.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">Does the website require an account or registration? <span>➕</span></div>
+                    <div class="faq-answer">No account or signup is required. You can simply enter your name handle and start playing immediately.</div>
+                </div>
             </div>
         </section>
 
         <!-- Contact Section -->
         <section id="contact" class="contact-grid">
-            <div class="contact-info">
-                <h3>Get In Touch</h3>
-                <p>Have questions, feedback, or suggestions for new quiz topics? Send us a message!</p>
-                <div class="contact-item">
-                    <div class="contact-icon">📧</div>
-                    <span>support@quizsystem.com</span>
-                </div>
-                <div class="contact-item">
-                    <div class="contact-icon">📍</div>
-                    <span>Global Online Learning Community</span>
-                </div>
+            <div>
+                <h3 style="font-size: 1.5rem; color: var(--text-primary); margin-bottom: 1rem;">Get In Touch</h3>
+                <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Have questions, feedback, or suggestions for new quiz topics?</p>
+                <div style="font-size: 0.95rem; color: var(--text-primary);">📧 support@quizsystem.com</div>
             </div>
 
-            <form class="contact-form" onsubmit="event.preventDefault(); alert('Thank you! Your message has been sent.'); this.reset();">
-                <div class="form-group">
+            <form onsubmit="event.preventDefault(); alert('Thank you! Your feedback message has been received.'); this.reset();">
+                <div class="form-group" style="margin-bottom: 1rem;">
                     <label for="cName">Your Name</label>
                     <input type="text" id="cName" class="form-input" placeholder="Enter your name" required>
                 </div>
-                <div class="form-group">
+                <div class="form-group" style="margin-bottom: 1rem;">
                     <label for="cEmail">Your Email</label>
                     <input type="email" id="cEmail" class="form-input" placeholder="Enter your email" required>
                 </div>
-                <div class="form-group">
+                <div class="form-group" style="margin-bottom: 1rem;">
                     <label for="cMsg">Message</label>
-                    <textarea id="cMsg" class="form-input" placeholder="Enter your message..." required></textarea>
+                    <textarea id="cMsg" class="form-input" style="min-height: 100px;" placeholder="Enter your message..." required></textarea>
                 </div>
                 <button type="submit" class="btn btn-primary">Send Message</button>
             </form>
@@ -242,21 +578,22 @@
         <div class="footer-container">
             <div>
                 <h3 class="footer-brand">📝 Quiz<span>System</span></h3>
-                <p class="footer-desc">
-                    An interactive, beginner-friendly online quiz application built with HTML, CSS, and JavaScript.
+                <p style="font-size: 0.9rem; line-height: 1.6;">
+                    Learn. Practice. Compete. Improve. An advanced online quiz platform for developers.
                 </p>
             </div>
-            <div class="footer-col">
-                <h4>Quick Links</h4>
+            <div>
+                <h4 style="color: #ffffff; font-size: 1rem; margin-bottom: 1rem;">Quick Links</h4>
                 <ul class="footer-links">
                     <li><a href="#home">Home</a></li>
-                    <li><a href="#features">Features</a></li>
+                    <li><a href="#categories">Categories</a></li>
+                    <li><a href="#leaderboard">Leaderboard</a></li>
+                    <li><a href="#history">History</a></li>
                     <li><a href="#about">About</a></li>
-                    <li><a href="#quiz">Start Quiz</a></li>
                 </ul>
             </div>
-            <div class="footer-col">
-                <h4>Legal</h4>
+            <div>
+                <h4 style="color: #ffffff; font-size: 1rem; margin-bottom: 1rem;">Legal</h4>
                 <ul class="footer-links">
                     <li><a href="#home">Privacy Policy</a></li>
                     <li><a href="#home">Terms of Service</a></li>
@@ -268,7 +605,9 @@
         </div>
     </footer>
 
-    <!-- App Logic Script -->
+    <!-- Modular Script Imports -->
+    <script src="js/questions.js"></script>
+    <script src="js/storage.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>
