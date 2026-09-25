@@ -1,13 +1,16 @@
 /* ==========================================================================
    QuizSystem - EdTech LocalStorage Engine & Gamification System
    Manages:
-   - Default Dark Theme
-   - XP, Levels, & Level Progression
+   - Theme (Dark Default)
+   - XP, Levels, & Level Progression (Level 1-5)
    - Achievements & Badge Unlocks
    - Daily Challenges & Daily Streaks
-   - Question Bookmarks & Personal Notes
-   - Topic Mastery Analytics
-   - Weak Topics & Targeted Recommendations
+   - Bookmarks & Personal Notes Engine
+   - Weak Subject Detection & Analytics (Strong 🟢, Average 🟡, Weak 🔴)
+   - Learning Video Recommendations per Weak Topic
+   - Saved Mistakes Notebook ("My Mistakes")
+   - Category Score Comparison ("Beat Your Previous Score")
+   - History & Local Leaderboard
    ========================================================================== */
 
 const STORAGE_KEYS = {
@@ -23,15 +26,17 @@ const STORAGE_KEYS = {
     LEADERBOARD: 'quizsystem_leaderboard',
     BOOKMARKS: 'quizsystem_bookmarks',
     NOTES: 'quizsystem_notes',
-    WEAK_TOPICS: 'quizsystem_weak_topics'
+    WEAK_TOPICS: 'quizsystem_weak_topics',
+    MISTAKES: 'quizsystem_mistakes',
+    CAT_PREV_SCORES: 'quizsystem_cat_scores'
 };
 
-// Level XP Thresholds & Badges
+// Skill Progression Levels (Requirement #13)
 const LEVEL_CONFIG = [
     { level: 1, title: "Beginner", minXP: 0, maxXP: 100 },
     { level: 2, title: "Learner", minXP: 100, maxXP: 300 },
-    { level: 3, title: "Explorer", minXP: 300, maxXP: 600 },
-    { level: 4, title: "Skilled", minXP: 600, maxXP: 1000 },
+    { level: 3, title: "Skilled", minXP: 300, maxXP: 600 },
+    { level: 4, title: "Advanced", minXP: 600, maxXP: 1000 },
     { level: 5, title: "Expert", minXP: 1000, maxXP: 99999 }
 ];
 
@@ -48,6 +53,57 @@ const BADGES_CONFIG = [
     { id: "speed_solver", title: "Speed Solver", desc: "Finish a quiz in under 2 minutes", icon: "⏱️" }
 ];
 
+const RECOMMENDED_LEARNING = {
+    "Java": {
+        topics: ["Java Basics & Syntax", "Collections Framework (List, Set, Map)", "Exception Handling", "Multithreading & Synchronization"],
+        videoLink: "https://www.youtube.com/watch?v=eIrMbAQSU34",
+        embedUrl: "https://www.youtube-nocookie.com/embed/eIrMbAQSU34",
+        description: "Master Java core programming, object concepts, collections, and multithreaded concurrency."
+    },
+    "OOP": {
+        topics: ["Encapsulation & Data Hiding", "Polymorphism & Dynamic Dispatch", "Inheritance & Polymorphic Overriding", "Interfaces vs Abstract Classes"],
+        videoLink: "https://www.youtube.com/watch?v=pTB0EiLXUC8",
+        embedUrl: "https://www.youtube-nocookie.com/embed/pTB0EiLXUC8",
+        description: "Comprehensive guide to Object-Oriented principles, dynamic method dispatch, and class architecture."
+    },
+    "DBMS": {
+        topics: ["Relational Model & Key Constraints", "ACID Transactions", "Normalization (1NF, 2NF, 3NF, BCNF)", "Indexing & Concurrency Control"],
+        videoLink: "https://www.youtube.com/watch?v=HXV3zeQKqGY",
+        embedUrl: "https://www.youtube-nocookie.com/embed/HXV3zeQKqGY",
+        description: "Learn database fundamentals, schema design, normalization rules, and transaction locks."
+    },
+    "SQL": {
+        topics: ["SELECT, WHERE & ORDER BY", "SQL JOIN Types (Inner, Left, Right, Full)", "GROUP BY & HAVING Aggregations", "Subqueries & Nested Queries"],
+        videoLink: "https://www.youtube.com/watch?v=HXV3zeQKqGY",
+        embedUrl: "https://www.youtube-nocookie.com/embed/HXV3zeQKqGY",
+        description: "Practical guide to writing SQL queries, joining tables, grouping data, and filtering results."
+    },
+    "HTML/CSS": {
+        topics: ["HTML5 Semantic Structure", "CSS Box Model & Specificity", "Flexbox Layout Model", "CSS Grid Positioning"],
+        videoLink: "https://www.youtube.com/watch?v=mU6anWqZJcc",
+        embedUrl: "https://www.youtube-nocookie.com/embed/mU6anWqZJcc",
+        description: "Learn web page structure, semantic elements, CSS alignment, Flexbox, and Grid responsive layouts."
+    },
+    "JavaScript": {
+        topics: ["ES6 Variables (var, let, const)", "Closures & Lexical Memory Scope", "Promises & Async/Await", "DOM Manipulation & Event Loop"],
+        videoLink: "https://www.youtube.com/watch?v=W6NZfCO5SIk",
+        embedUrl: "https://www.youtube-nocookie.com/embed/W6NZfCO5SIk",
+        description: "Master modern JavaScript, closures, asynchronous event loop, promises, and DOM interactions."
+    },
+    "OS": {
+        topics: ["Process Concurrency & Deadlocks", "Virtual Memory & Page Swapping", "CPU Scheduling (Round Robin, SJF)", "Threads & Inter-process Locks"],
+        videoLink: "https://www.youtube.com/watch?v=vBURTt97EkA",
+        embedUrl: "https://www.youtube-nocookie.com/embed/vBURTt97EkA",
+        description: "Understand operating system kernels, process execution, deadlock prevention, and memory paging."
+    },
+    "Computer Networks": {
+        topics: ["OSI 7-Layer Reference Model", "TCP vs UDP Transport Protocols", "IP Logical Addressing & Subnetting", "DNS & Application Layer Routing"],
+        videoLink: "https://www.youtube.com/watch?v=IPvYjXCsTg8",
+        embedUrl: "https://www.youtube-nocookie.com/embed/IPvYjXCsTg8",
+        description: "Explore network protocols, OSI model layers, packet routing, TCP 3-way handshake, and IP subnetting."
+    }
+};
+
 const SAMPLE_LEADERBOARD = [
     { name: "Alex Chen", xp: 1250, level: 5, score: 10, total: 10, percentage: 100.0, quizzesCompleted: 12, date: "2026-09-20" },
     { name: "Priya Sharma", xp: 850, level: 4, score: 9, total: 10, percentage: 90.0, quizzesCompleted: 8, date: "2026-09-21" },
@@ -58,7 +114,7 @@ const SAMPLE_LEADERBOARD = [
 
 const StorageEngine = {
     /**
-     * Theme Engine (Dark mode is DEFAULT)
+     * Theme Engine (Dark mode default)
      */
     getTheme() {
         return localStorage.getItem(STORAGE_KEYS.THEME) || 'dark';
@@ -77,9 +133,6 @@ const StorageEngine = {
         return saved;
     },
 
-    /**
-     * Application Settings (Audio & Animations)
-     */
     getSettings() {
         try {
             const data = localStorage.getItem(STORAGE_KEYS.SETTINGS);
@@ -93,9 +146,6 @@ const StorageEngine = {
         localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
     },
 
-    /**
-     * Player Name
-     */
     getPlayerName() {
         return localStorage.getItem(STORAGE_KEYS.PLAYER_NAME) || 'Developer';
     },
@@ -107,7 +157,7 @@ const StorageEngine = {
     },
 
     /**
-     * Gamified XP & Level System
+     * XP & Skill Level Engine
      */
     getXP() {
         return parseInt(localStorage.getItem(STORAGE_KEYS.XP) || "0", 10);
@@ -210,7 +260,6 @@ const StorageEngine = {
 
     checkAchievements() {
         const history = this.getHistory();
-        const unlocked = this.getUnlockedAchievements();
         const streak = this.getStreak();
 
         const totalQuizzes = history.length;
@@ -268,12 +317,12 @@ const StorageEngine = {
             total: total
         };
         localStorage.setItem(STORAGE_KEYS.DAILY_CHALLENGE, JSON.stringify(data));
-        this.addXP(50); // Daily challenge reward
+        this.addXP(50);
         this.updateStreak();
     },
 
     /**
-     * Question Bookmarks
+     * Bookmarks Engine
      */
     getBookmarks() {
         try {
@@ -294,14 +343,7 @@ const StorageEngine = {
             if (typeof showToast === 'function') showToast("Bookmark removed", "info");
         } else {
             bookmarks.push({
-                id: questionObj.id,
-                category: questionObj.category,
-                difficulty: questionObj.difficulty,
-                question: questionObj.question,
-                options: questionObj.options,
-                correct: questionObj.correct,
-                explanation: questionObj.explanation,
-                hint: questionObj.hint,
+                ...questionObj,
                 date: new Date().toLocaleDateString()
             });
             isBookmarked = true;
@@ -318,7 +360,7 @@ const StorageEngine = {
     },
 
     /**
-     * Personal User Notes on Questions
+     * Personal User Notes
      */
     getNotes() {
         try {
@@ -345,7 +387,81 @@ const StorageEngine = {
     },
 
     /**
-     * Quiz History & Local Leaderboard
+     * Mistake Notebook ("My Mistakes")
+     */
+    getMistakes() {
+        try {
+            const data = localStorage.getItem(STORAGE_KEYS.MISTAKES);
+            return data ? JSON.parse(data) : [];
+        } catch (e) {
+            return [];
+        }
+    },
+
+    saveMistake(questionObj, userAnswer) {
+        let mistakes = this.getMistakes();
+        const existsIdx = mistakes.findIndex(m => m.questionObj.id === questionObj.id);
+        
+        const mistakeEntry = {
+            id: questionObj.id,
+            questionObj: questionObj,
+            userAnswer: userAnswer,
+            date: new Date().toLocaleDateString()
+        };
+
+        if (existsIdx >= 0) {
+            mistakes[existsIdx] = mistakeEntry;
+        } else {
+            mistakes.unshift(mistakeEntry);
+        }
+
+        localStorage.setItem(STORAGE_KEYS.MISTAKES, JSON.stringify(mistakes));
+    },
+
+    removeMistake(questionId) {
+        let mistakes = this.getMistakes();
+        mistakes = mistakes.filter(m => m.id !== questionId && m.questionObj.id !== questionId);
+        localStorage.setItem(STORAGE_KEYS.MISTAKES, JSON.stringify(mistakes));
+    },
+
+    clearMistakes() {
+        localStorage.removeItem(STORAGE_KEYS.MISTAKES);
+    },
+
+    /**
+     * Category Previous Score Comparison ("Beat Your Previous Score")
+     */
+    getCategoryScores() {
+        try {
+            const data = localStorage.getItem(STORAGE_KEYS.CAT_PREV_SCORES);
+            return data ? JSON.parse(data) : {};
+        } catch (e) {
+            return {};
+        }
+    },
+
+    getPreviousCategoryScore(categoryName) {
+        const catScores = this.getCategoryScores();
+        return catScores[categoryName] || null;
+    },
+
+    saveCategoryScore(categoryName, score, total) {
+        const catScores = this.getCategoryScores();
+        const prev = catScores[categoryName];
+        
+        catScores[categoryName] = {
+            score,
+            total,
+            percentage: Math.round((score / total) * 100),
+            date: new Date().toLocaleDateString()
+        };
+
+        localStorage.setItem(STORAGE_KEYS.CAT_PREV_SCORES, JSON.stringify(catScores));
+        return prev; // returns previous score object or null
+    },
+
+    /**
+     * Quiz Attempt History & Leaderboard
      */
     getHistory() {
         try {
@@ -362,8 +478,8 @@ const StorageEngine = {
         localStorage.setItem(STORAGE_KEYS.HISTORY, JSON.stringify(history));
 
         // Award XP
-        let xpGained = attemptData.score * 10 + 25; // 10 per correct + 25 completion
-        if (attemptData.percentage >= 100) xpGained += 100; // Perfect score bonus
+        let xpGained = attemptData.score * 10 + 25;
+        if (attemptData.percentage >= 100) xpGained += 100;
         this.addXP(xpGained);
 
         this.setPlayerName(attemptData.playerName);
@@ -415,15 +531,16 @@ const StorageEngine = {
     },
 
     /**
-     * Topic Mastery Progress Calculation
+     * Smart Weak-Subject Detection Engine
+     * Evaluates accuracy across categories & identifies Strong, Average, Weak areas
      */
-    getTopicMastery() {
+    getWeakSubjectsAnalysis() {
         const history = this.getHistory();
         const categories = ["Java", "OOP", "DBMS", "SQL", "HTML/CSS", "JavaScript", "OS", "Computer Networks"];
-        const mastery = {};
-
+        
+        const catStats = {};
         categories.forEach(cat => {
-            mastery[cat] = { correct: 0, total: 0, percentage: 0 };
+            catStats[cat] = { correct: 0, total: 0, percentage: 0, attempts: 0 };
         });
 
         history.forEach(h => {
@@ -431,25 +548,54 @@ const StorageEngine = {
             if (catKey === "HTML & CSS") catKey = "HTML/CSS";
             if (catKey === "CS") catKey = "Computer Networks";
 
-            if (mastery[catKey]) {
-                mastery[catKey].correct += h.correctAnswers;
-                mastery[catKey].total += h.totalQuestions;
+            if (catStats[catKey]) {
+                catStats[catKey].correct += (h.correctAnswers || h.score || 0);
+                catStats[catKey].total += (h.totalQuestions || h.total || 0);
+                catStats[catKey].attempts += 1;
             }
         });
+
+        const strong = [];
+        const average = [];
+        const weak = [];
 
         categories.forEach(cat => {
-            if (mastery[cat].total > 0) {
-                mastery[cat].percentage = Math.round((mastery[cat].correct / mastery[cat].total) * 100);
+            if (catStats[cat].total > 0) {
+                const pct = Math.round((catStats[cat].correct / catStats[cat].total) * 100);
+                catStats[cat].percentage = pct;
+
+                if (pct >= 75) {
+                    strong.push({ category: cat, percentage: pct, status: "Strong", icon: "🟢" });
+                } else if (pct >= 50) {
+                    average.push({ category: cat, percentage: pct, status: "Average", icon: "🟡" });
+                } else {
+                    weak.push({ category: cat, percentage: pct, status: "Weak", icon: "🔴" });
+                }
             } else {
-                mastery[cat].percentage = 0; // Default cold start
+                // Cold start default: unattempted categories default to Average/Needs Practice
+                catStats[cat].percentage = 0;
             }
         });
 
-        return mastery;
+        // Find primary weak subject (lowest percentage or first weak)
+        let primaryWeak = null;
+        if (weak.length > 0) {
+            weak.sort((a, b) => a.percentage - b.percentage);
+            primaryWeak = weak[0];
+        }
+
+        return {
+            catStats,
+            strong,
+            average,
+            weak,
+            primaryWeak,
+            recommendedLearning: RECOMMENDED_LEARNING
+        };
     },
 
     /**
-     * User Profile Dashboard Metrics
+     * User Dashboard Statistics & Summary
      */
     getUserDashboardStats() {
         const history = this.getHistory();
@@ -457,6 +603,7 @@ const StorageEngine = {
         const currentXP = this.getXP();
         const currentLevel = this.getLevel(currentXP);
         const streak = this.getStreak();
+        const mistakes = this.getMistakes();
 
         if (history.length === 0) {
             return {
@@ -469,6 +616,7 @@ const StorageEngine = {
                 avgPercentage: "0.0",
                 totalAttempted: 0,
                 totalCorrect: 0,
+                totalMistakes: mistakes.length,
                 accuracy: "0.0"
             };
         }
@@ -499,6 +647,7 @@ const StorageEngine = {
             avgPercentage,
             totalAttempted,
             totalCorrect,
+            totalMistakes: mistakes.length,
             accuracy
         };
     }

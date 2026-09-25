@@ -1,9 +1,12 @@
 /* ==========================================================================
-   QuizSystem - Expanded EdTech Question Dataset
+   QuizSystem - Advanced EdTech Question Dataset
    Categories: Java, OOP, DBMS, SQL, HTML/CSS, JavaScript, OS, Computer Networks
    Fields per question:
-   - id, category, difficulty, question, options, correct
-   - hint, explanation (WHY?), solution (HOW TO SOLVE array), concept, quickTip
+   - id, category, topic, difficulty, question, options, correct
+   - hint, explanation, concept, commonMistake, quickTip
+   - isTricky, trickyExplanation
+   - interviewTesting, interviewFollowUp
+   - videoLink
    ========================================================================== */
 
 const QUESTION_DATABASE = {
@@ -11,87 +14,116 @@ const QUESTION_DATABASE = {
         {
             id: "j1",
             category: "Java",
+            topic: "Java Basics",
             difficulty: "Easy",
             question: "Which keyword is used to declare a class in Java?",
             options: ["struct", "class", "interface", "define"],
             correct: 1,
             hint: "Think about the foundational keyword used in Java to encapsulate data and methods into a blueprint.",
             explanation: "The 'class' keyword is used in Java to define a user-defined blueprint from which individual objects are instantiated.",
-            solution: [
-                "Step 1: Identify that Java is a pure class-based Object-Oriented language.",
-                "Step 2: Recognize that 'struct' belongs to C/C++, 'define' is a C preprocessor directive, and 'interface' declares abstract contracts.",
-                "Step 3: Conclude that 'class' is the correct keyword for defining a class blueprint."
-            ],
             concept: "Classes & Blueprint Definition in Object-Oriented Java.",
-            quickTip: "Every standalone Java program requires at least one class definition."
+            commonMistake: "Confusing Java's 'class' with C language's 'struct' or preprocessor '#define'.",
+            quickTip: "Every standalone Java program requires at least one class definition.",
+            isTricky: false,
+            trickyExplanation: "",
+            interviewTesting: "Tests basic knowledge of Java syntax and object creation fundamentals.",
+            interviewFollowUp: "What is the difference between a public class and a package-private class in Java?",
+            videoLink: "https://www.youtube.com/watch?v=eIrMbAQSU34"
         },
         {
             id: "j2",
             category: "Java",
+            topic: "Primitive Types",
             difficulty: "Easy",
-            question: "What is the size of a standard primitive 'int' data type in Java?",
+            question: "What is the fixed memory size of a standard primitive 'int' data type in Java?",
             options: ["8 bits", "16 bits", "32 bits", "64 bits"],
             correct: 2,
             hint: "Java primitive integer sizes are fixed regardless of operating system architecture. It uses 4 bytes.",
             explanation: "In Java, an 'int' is a signed 32-bit primitive data type with a range from -2^31 to 2^31 - 1.",
-            solution: [
-                "Step 1: Recall primitive sizes in Java: byte (8-bit), short (16-bit), int (32-bit), long (64-bit).",
-                "Step 2: 4 bytes equal 4 * 8 = 32 bits.",
-                "Step 3: Therefore, Java 'int' occupies exactly 32 bits."
-            ],
             concept: "Fixed Primitive Data Types in Java Virtual Machine (JVM).",
-            quickTip: "Remember byte (1), short (2), int (4), long (8) bytes."
+            commonMistake: "Assuming primitive sizes change between 32-bit and 64-bit OS architectures (unlike C/C++).",
+            quickTip: "Remember: byte (1 byte/8-bit), short (2 bytes), int (4 bytes/32-bit), long (8 bytes/64-bit).",
+            isTricky: false,
+            trickyExplanation: "",
+            interviewTesting: "Assesses understanding of platform independence and JVM data specifications.",
+            interviewFollowUp: "Why does Java guarantee fixed primitive sizes across all operating platforms?",
+            videoLink: "https://www.youtube.com/watch?v=eIrMbAQSU34"
         },
         {
             id: "j3",
             category: "Java",
+            topic: "Collections",
             difficulty: "Medium",
-            question: "Which Java Collection class guarantees unique elements and does not allow duplicates?",
+            question: "Which Java Collection class guarantees unique elements and automatically forbids duplicate entries?",
             options: ["ArrayList", "Vector", "HashSet", "LinkedList"],
             correct: 2,
             hint: "Think of the set data structure in mathematics where duplicate elements are automatically excluded.",
             explanation: "HashSet implements the Set interface, backed by a hashtable. It stores unique elements by using hashCode() and equals() to prevent duplicates.",
-            solution: [
-                "Step 1: Analyze ArrayList, Vector, and LinkedList: all allow duplicate elements.",
-                "Step 2: Recognize that Set interface implementations forbid duplicate elements.",
-                "Step 3: HashSet checks element equality using hashCode() and equals() to ensure uniqueness."
-            ],
             concept: "Java Collections Framework - Set vs List interfaces.",
-            quickTip: "List allows duplicates; Set enforces uniqueness."
+            commonMistake: "Confusing List implementations (ArrayList, LinkedList) which allow duplicates with Set implementations which forbid them.",
+            quickTip: "List allows duplicates & maintains insertion order; Set enforces uniqueness.",
+            isTricky: false,
+            trickyExplanation: "",
+            interviewTesting: "Verifies knowledge of Java Collections contract implementations and hashing.",
+            interviewFollowUp: "How does HashSet internally determine if two custom objects are duplicate?",
+            videoLink: "https://www.youtube.com/watch?v=eIrMbAQSU34"
         },
         {
             id: "j4",
             category: "Java",
+            topic: "Exception Handling",
             difficulty: "Medium",
-            question: "Which exception is thrown when an array is accessed with an invalid or negative index?",
+            question: "Which unchecked exception is thrown by the JVM when an array is accessed with an index less than 0 or greater than equal to array length?",
             options: ["NullPointerException", "ArrayIndexOutOfBoundsException", "IllegalArgumentException", "ClassNotFoundException"],
             correct: 1,
-            hint: "Consider what happens when you try to access an index outside the valid range [0, length - 1].",
+            hint: "Consider what happens when you try to access an index outside the valid zero-based range [0, length - 1].",
             explanation: "ArrayIndexOutOfBoundsException is an unchecked RuntimeException thrown to indicate that an array has been accessed with an illegal index.",
-            solution: [
-                "Step 1: Note that arrays in Java are zero-indexed from 0 to length - 1.",
-                "Step 2: Accessing index < 0 or index >= length triggers an unchecked runtime error.",
-                "Step 3: The JVM throws ArrayIndexOutOfBoundsException to prevent memory corruption."
-            ],
             concept: "Java Exception Handling & Array Index Boundaries.",
-            quickTip: "Valid array indices always satisfy: 0 <= index < array.length."
+            commonMistake: "Assuming array bounds errors are checked at compile time rather than runtime.",
+            quickTip: "Valid array indices always satisfy: 0 <= index < array.length.",
+            isTricky: false,
+            trickyExplanation: "",
+            interviewTesting: "Evaluates exception handling taxonomy (Checked vs Unchecked exceptions).",
+            interviewFollowUp: "What is the base superclass for all unchecked exceptions in Java?",
+            videoLink: "https://www.youtube.com/watch?v=eIrMbAQSU34"
         },
         {
             id: "j5",
             category: "Java",
+            topic: "Multithreading",
             difficulty: "Hard",
-            question: "What happens if a thread calls Object.wait() without holding the target object's monitor lock?",
+            question: "What happens if a thread invokes Object.wait() without holding the target object's monitor lock inside a synchronized block?",
             options: ["InterruptedException", "IllegalMonitorStateException", "ThreadDeath", "Deadlock"],
             correct: 1,
-            hint: "To call wait(), notify(), or notifyAll(), a thread must first enter a synchronized block on that object.",
-            explanation: "If a thread invokes wait() or notify() without owning the specified object's monitor lock (i.e. outside synchronized code), the JVM throws IllegalMonitorStateException.",
-            solution: [
-                "Step 1: Understand that wait() releases the monitor lock of an object.",
-                "Step 2: If the current thread does not own the monitor lock, it cannot release or wait on it.",
-                "Step 3: The JVM immediately throws an IllegalMonitorStateException at runtime."
-            ],
+            hint: "To call wait(), notify(), or notifyAll(), a thread must first acquire the synchronized monitor lock.",
+            explanation: "If a thread invokes wait() or notify() without owning the specified object's monitor lock, the JVM throws an unchecked IllegalMonitorStateException at runtime.",
             concept: "Java Concurrency & Inter-thread Communication Locks.",
-            quickTip: "Always wrap wait() and notify() calls inside synchronized(object) blocks."
+            commonMistake: "Thinking wait() can be called anywhere in code without a synchronized block.",
+            quickTip: "Always wrap wait() and notify() calls inside synchronized(object) blocks.",
+            isTricky: true,
+            trickyExplanation: "Many developers guess InterruptedException because wait() throws InterruptedException when interrupted, but failing to hold the lock throws IllegalMonitorStateException immediately!",
+            interviewTesting: "Tests deep understanding of multi-threaded synchronized monitors and thread state transitions.",
+            interviewFollowUp: "Why must wait() and notify() be called from within a synchronized context?",
+            videoLink: "https://www.youtube.com/watch?v=eIrMbAQSU34"
+        },
+        {
+            id: "j6",
+            category: "Java",
+            topic: "Strings & Immutability",
+            difficulty: "Medium",
+            question: "What is the result of comparing two String literals created via `String s1 = \"Java\"; String s2 = \"Java\";` using `s1 == s2`?",
+            options: ["false", "true", "Compilation Error", "NullPointerException"],
+            correct: 1,
+            hint: "Java optimizes string storage using the String Constant Pool inside heap memory.",
+            explanation: "`s1 == s2` evaluates to true because string literals are cached in the String Constant Pool, making both references point to the exact same memory address.",
+            concept: "String Constant Pool and Reference Equality (==) vs Object Value Equality (.equals()).",
+            commonMistake: "Thinking `==` always returns false for strings without considering literal pool caching.",
+            quickTip: "Use `.equals()` for value comparison, but know that literals reference the same pool memory.",
+            isTricky: true,
+            trickyExplanation: "Developers are trained to never use `==` for strings, so they select `false`. However, string literals with identical values share the same pool reference!",
+            interviewTesting: "Checks understanding of String Constant Pool memory optimization in JVM.",
+            interviewFollowUp: "What happens if you create a string with `new String(\"Java\")` instead of a literal?",
+            videoLink: "https://www.youtube.com/watch?v=eIrMbAQSU34"
         }
     ],
 
@@ -99,58 +131,107 @@ const QUESTION_DATABASE = {
         {
             id: "o1",
             category: "OOP",
+            topic: "Encapsulation",
             difficulty: "Easy",
-            question: "Which OOP principle bundles data (attributes) and methods operating on that data into a single class unit while restricting direct access?",
+            question: "Which OOP principle bundles data fields and operating methods into a single class unit while restricting direct access using private modifiers?",
             options: ["Abstraction", "Encapsulation", "Inheritance", "Polymorphism"],
             correct: 1,
-            hint: "Think of a protective capsule that hides internal variables behind getter and setter methods.",
-            explanation: "Encapsulation is the bundling of data and methods operating on that data within a single class, hiding internal implementation details using private access modifiers.",
-            solution: [
-                "Step 1: Identify key goal: Data hiding and bundling inside a class unit.",
-                "Step 2: Private fields + Public Getters/Setters = Encapsulation.",
-                "Step 3: Conclude that Encapsulation is the correct OOP pillar."
-            ],
+            hint: "Think of a protective capsule that hides internal state behind getter and setter methods.",
+            explanation: "Encapsulation is the bundling of data attributes and methods operating on that data within a single class, hiding internal implementation details using private access modifiers.",
             concept: "Object-Oriented Programming (OOP) Data Encapsulation.",
-            quickTip: "Encapsulation = Data Hiding + Protective Access Modifiers."
+            commonMistake: "Confusing Encapsulation (data hiding via private fields) with Abstraction (hiding implementation complexity via interfaces).",
+            quickTip: "Encapsulation = Data Hiding + Protective Access Modifiers (private fields + public getters/setters).",
+            isTricky: false,
+            trickyExplanation: "",
+            interviewTesting: "Tests knowledge of foundational Object-Oriented design pillars.",
+            interviewFollowUp: "How does encapsulation improve code maintainability and data validation?",
+            videoLink: "https://www.youtube.com/watch?v=pTB0EiLXUC8"
         },
         {
             id: "o2",
             category: "OOP",
+            topic: "Polymorphism",
             difficulty: "Medium",
-            question: "Which OOP concept allows the same method call to exhibit different behaviors depending on the runtime object instance?",
+            question: "Which OOP concept allows the same method call to exhibit different execution behaviors depending on the actual runtime object instance?",
             options: ["Polymorphism", "Encapsulation", "Inheritance", "Abstraction"],
             correct: 0,
-            hint: "The word comes from Greek meaning 'many forms'. It enables method overriding.",
-            explanation: "Polymorphism allows objects of different classes to respond to the same method invocation in their own unique way (e.g. Shape.draw() called on Circle or Square).",
-            solution: [
-                "Step 1: Note that 'poly' = many, 'morph' = forms.",
-                "Step 2: Method Overriding allows a subclass to provide a specific implementation of a superclass method.",
-                "Step 3: At runtime, the JVM calls the overridden version corresponding to the actual instance object."
-            ],
+            hint: "The word originates from Greek meaning 'many forms'. It enables dynamic method overriding.",
+            explanation: "Polymorphism allows objects of different classes to respond to the same method invocation in their own unique way (e.g., Shape.draw() called on Circle or Square).",
             concept: "Dynamic Method Dispatch & Runtime Polymorphism.",
-            quickTip: "Polymorphism = One Interface, Multiple Runtime Behaviors."
+            commonMistake: "Confusing compile-time polymorphism (Method Overloading) with runtime polymorphism (Method Overriding).",
+            quickTip: "Polymorphism = One Interface, Multiple Runtime Behaviors.",
+            isTricky: false,
+            trickyExplanation: "",
+            interviewTesting: "Verifies comprehension of method overriding and late binding at runtime.",
+            interviewFollowUp: "What is the difference between compile-time overloading and runtime overriding?",
+            videoLink: "https://www.youtube.com/watch?v=pTB0EiLXUC8"
         },
         {
             id: "o3",
             category: "OOP",
+            topic: "Interfaces & Abstract Classes",
             difficulty: "Hard",
-            question: "What is the primary architectural difference between an Interface and an Abstract Class in Java?",
+            question: "What is the primary inheritance distinction between an Interface and an Abstract Class in Java?",
             options: [
                 "A class can implement multiple interfaces but extend only one class",
-                "Interfaces can store non-final instance fields",
-                "Abstract classes cannot declare constructors",
-                "Interfaces allow private state instance fields"
+                "Interfaces can store mutable non-final instance fields",
+                "Abstract classes cannot define constructors",
+                "Interfaces allow private instance variable state"
             ],
             correct: 0,
-            hint: "Consider Java's single inheritance rule for classes versus multiple implementation capability for interfaces.",
-            explanation: "Java supports single class inheritance (a class can extend only one abstract class) but multiple interface inheritance (a class can implement multiple interfaces).",
-            solution: [
-                "Step 1: Abstract class represents an 'is-a' hierarchy with state.",
-                "Step 2: Interface represents a 'can-do' contract capability.",
-                "Step 3: Java allows extending 1 class, but implementing N interfaces."
-            ],
+            hint: "Consider Java's single inheritance constraint for classes versus multiple contract capabilities for interfaces.",
+            explanation: "Java supports single class inheritance (a class can extend only one superclass/abstract class) but multiple interface implementation (a class can implement multiple interfaces).",
             concept: "Multiple Interface Implementation vs Single Class Inheritance.",
-            quickTip: "Extend 1 Abstract Class; Implement Multiple Interfaces."
+            commonMistake: "Believing abstract classes cannot have constructors (they do, to initialize superclass state).",
+            quickTip: "Extend 1 Abstract Class ('IS-A'); Implement Multiple Interfaces ('CAN-DO').",
+            isTricky: true,
+            trickyExplanation: "Candidates often confuse interface features after Java 8/9 (default and private methods) with state storage rules. Interfaces still cannot hold instance state!",
+            interviewTesting: "Evaluates architectural decision-making when designing class hierarchies.",
+            interviewFollowUp: "When should you choose an abstract class over an interface in system design?",
+            videoLink: "https://www.youtube.com/watch?v=pTB0EiLXUC8"
+        },
+        {
+            id: "o4",
+            category: "OOP",
+            topic: "Inheritance",
+            difficulty: "Easy",
+            question: "Which keyword is used in Java by a child subclass to inherit from a parent superclass?",
+            options: ["implements", "extends", "inherits", "super"],
+            correct: 1,
+            hint: "Think about extending the capability of a base class.",
+            explanation: "The 'extends' keyword establishes an IS-A relationship where the subclass inherits attributes and methods from the superclass.",
+            concept: "Single Inheritance & Code Reusability.",
+            commonMistake: "Confusing 'extends' (for classes) with 'implements' (for interfaces).",
+            quickTip: "Class extends Class | Class implements Interface.",
+            isTricky: false,
+            trickyExplanation: "",
+            interviewTesting: "Tests fundamental syntax for object inheritance.",
+            interviewFollowUp: "Does Java support multiple inheritance of classes? Why or why not?",
+            videoLink: "https://www.youtube.com/watch?v=pTB0EiLXUC8"
+        },
+        {
+            id: "o5",
+            category: "OOP",
+            topic: "Abstraction",
+            difficulty: "Medium",
+            question: "What is the main goal of Abstraction in Object-Oriented Software Design?",
+            options: [
+                "Hiding internal implementation complexity and showing only essential public features",
+                "Compressing source code files",
+                "Encrypting object memory locations",
+                "Preventing class instantiation permanently"
+            ],
+            correct: 0,
+            hint: "Focus on reducing complexity by exposing high-level contracts while concealing low-level operational details.",
+            explanation: "Abstraction focuses on showing essential behavior to users while hiding background implementation details, typically implemented using abstract classes and interfaces.",
+            concept: "System Abstraction & Boundary Interfaces.",
+            commonMistake: "Thinking abstraction and encapsulation are identical concepts.",
+            quickTip: "Abstraction = Hiding Complexity | Encapsulation = Hiding Sensitive Data.",
+            isTricky: false,
+            trickyExplanation: "",
+            interviewTesting: "Assesses software engineering design abstraction capabilities.",
+            interviewFollowUp: "Give a real-world example of abstraction (e.g. driving a car without knowing engine mechanics).",
+            videoLink: "https://www.youtube.com/watch?v=pTB0EiLXUC8"
         }
     ],
 
@@ -158,42 +239,88 @@ const QUESTION_DATABASE = {
         {
             id: "db1",
             category: "DBMS",
+            topic: "DBMS Basics",
             difficulty: "Easy",
-            question: "Which SQL clause is used to filter rows returned by a SELECT query?",
-            options: ["GROUP BY", "WHERE", "ORDER BY", "HAVING"],
+            question: "Which database component uniquely identifies each record/row in a relational table?",
+            options: ["Foreign Key", "Primary Key", "Candidate Key", "Composite Key"],
             correct: 1,
-            hint: "This clause specifies condition filters before any grouping or aggregation takes place.",
-            explanation: "The WHERE clause is used to filter records and extract only those records that fulfill a specified condition.",
-            solution: [
-                "Step 1: Identify that WHERE filters individual rows before grouping.",
-                "Step 2: HAVING filters groups after GROUP BY.",
-                "Step 3: Therefore, WHERE is used for row-level filtering."
-            ],
-            concept: "Relational Database SQL Query Execution Order.",
-            quickTip: "WHERE filters rows; HAVING filters aggregated groups."
+            hint: "This key constraint must contain unique values and cannot contain NULL values.",
+            explanation: "A Primary Key is a column or set of columns that uniquely identifies each row in a database table. Primary keys must contain UNIQUE values and cannot contain NULL.",
+            concept: "Relational Database Integrity Constraints & Keys.",
+            commonMistake: "Confusing Primary Key (must be non-null & unique) with Foreign Key (references another table's primary key).",
+            quickTip: "Primary Key = UNIQUE + NOT NULL constraint.",
+            isTricky: false,
+            trickyExplanation: "",
+            interviewTesting: "Tests knowledge of database relational design and table constraints.",
+            interviewFollowUp: "Can a relational table have multiple Primary Keys? What about Unique Keys?",
+            videoLink: "https://www.youtube.com/watch?v=HXV3zeQKqGY"
         },
         {
             id: "db2",
             category: "DBMS",
+            topic: "Transactions & ACID",
             difficulty: "Medium",
-            question: "What does ACID stand for in Database Transaction Management?",
+            question: "What does the 'A' in ACID properties of transaction management guarantee?",
             options: [
-                "Atomicity, Consistency, Isolation, Durability",
-                "Accuracy, Control, Integration, Data",
-                "Access, Concurrency, Index, Database",
-                "Action, Constraint, Isolation, Domain"
+                "Atomicity: Either all operations of a transaction execute completely or none execute at all",
+                "Accuracy: Data values match real world metrics",
+                "Availability: Database is reachable 24/7",
+                "Authorization: User permissions are verified"
             ],
             correct: 0,
-            hint: "These four properties guarantee that database transactions are processed reliably.",
-            explanation: "ACID stands for Atomicity (all or nothing), Consistency (valid state transitions), Isolation (independent concurrent execution), and Durability (committed data persists).",
-            solution: [
-                "Step 1: Atomicity = All operations complete or none do.",
-                "Step 2: Consistency = Database constraints remain valid.",
-                "Step 3: Isolation = Concurrent transactions do not interfere.",
-                "Step 4: Durability = Committed transactions survive system crashes."
+            hint: "Atomicity ensures the 'All-or-Nothing' rule during multi-step database transactions.",
+            explanation: "Atomicity guarantees that all transaction statements execute successfully as a single atomic unit. If any operation fails, the entire transaction is rolled back.",
+            concept: "ACID Transaction Guarantees & Transaction Rollbacks.",
+            commonMistake: "Thinking Atomicity means execution speed rather than all-or-nothing completion.",
+            quickTip: "Atomicity = All or Nothing | Durability = Permanent Storage.",
+            isTricky: false,
+            trickyExplanation: "",
+            interviewTesting: "Verifies understanding of transaction reliability and crash safety.",
+            interviewFollowUp: "How do relational databases implement Atomicity using write-ahead logs (WAL)?",
+            videoLink: "https://www.youtube.com/watch?v=HXV3zeQKqGY"
+        },
+        {
+            id: "db3",
+            category: "DBMS",
+            topic: "Normalization",
+            difficulty: "Hard",
+            question: "A table is in Second Normal Form (2NF) if it is already in 1NF and satisfies which additional condition?",
+            options: [
+                "No partial dependencies (every non-prime attribute is fully functionally dependent on the entire primary key)",
+                "No transitive dependencies exist",
+                "All multi-valued attributes are removed",
+                "Every determinant is a super key"
             ],
-            concept: "Relational DBMS Transaction ACID Guarantees.",
-            quickTip: "Remember: All-or-nothing (Atomicity) + Reliable Storage (Durability)."
+            correct: 0,
+            hint: "2NF eliminates partial functional dependency where an attribute depends on only part of a composite primary key.",
+            explanation: "2NF requires 1NF compliance plus the removal of partial dependencies. Every non-prime attribute must depend on the whole candidate primary key, not just a subset.",
+            concept: "Database Normalization & Functional Dependency Rules (1NF -> 2NF -> 3NF -> BCNF).",
+            commonMistake: "Confusing 2NF (eliminates partial dependency) with 3NF (eliminates transitive dependency).",
+            quickTip: "1NF: Atomic values | 2NF: No partial key dependency | 3NF: No transitive dependency.",
+            isTricky: true,
+            trickyExplanation: "Candidates frequently swap the definitions of 2NF and 3NF. 2NF targets partial key dependencies; 3NF targets transitive dependencies between non-key attributes!",
+            interviewTesting: "Assesses relational schema design and normalization mechanics.",
+            interviewFollowUp: "What is BCNF and how does it differ from 3NF?",
+            videoLink: "https://www.youtube.com/watch?v=HXV3zeQKqGY"
+        },
+        {
+            id: "db4",
+            category: "DBMS",
+            topic: "Keys & Relationships",
+            difficulty: "Easy",
+            question: "Which key establishes a link/relationship between data in two relational tables?",
+            options: ["Super Key", "Foreign Key", "Primary Key", "Candidate Key"],
+            correct: 1,
+            hint: "This key in a child table points directly to the Primary Key in a parent table.",
+            explanation: "A Foreign Key is a field in one table that refers to the Primary Key in another table, ensuring referential integrity between linked datasets.",
+            concept: "Referential Integrity & Table Relationships.",
+            commonMistake: "Believing a Foreign Key must be unique in the child table (it can have duplicate foreign references).",
+            quickTip: "Foreign Key maintains referential integrity across related tables.",
+            isTricky: false,
+            trickyExplanation: "",
+            interviewTesting: "Tests understanding of table relationships (1-to-1, 1-to-N, N-to-M).",
+            interviewFollowUp: "What happens when you attempt to delete a parent record that has linked Foreign Keys in child records?",
+            videoLink: "https://www.youtube.com/watch?v=HXV3zeQKqGY"
         }
     ],
 
@@ -201,36 +328,78 @@ const QUESTION_DATABASE = {
         {
             id: "s1",
             category: "SQL",
+            topic: "SQL Queries",
             difficulty: "Easy",
-            question: "Which SQL keyword is used to sort the result-set in ascending or descending order?",
-            options: ["SORT BY", "ORDER BY", "ARRANGE BY", "GROUP BY"],
+            question: "Which SQL clause is used to filter records and return only those rows that fulfill specified boolean conditions?",
+            options: ["GROUP BY", "WHERE", "ORDER BY", "HAVING"],
             correct: 1,
-            hint: "Use ASC for ascending and DESC for descending with this clause.",
-            explanation: "The ORDER BY keyword is used to sort the result-set in ascending (default) or descending order.",
-            solution: [
-                "Step 1: Recognize that SQL specifies sorting using ORDER BY.",
-                "Step 2: By default, ORDER BY sorts in ascending order (ASC).",
-                "Step 3: Adding DESC sorts in descending order."
-            ],
-            concept: "SQL Result Set Ordering & Sorting.",
-            quickTip: "ORDER BY col_name ASC|DESC."
+            hint: "This filtering clause is evaluated BEFORE any GROUP BY aggregation takes place.",
+            explanation: "The WHERE clause is used to filter records in a SQL query based on specified comparison or logical conditions.",
+            concept: "SQL Query Execution Lifecycle & Filtering.",
+            commonMistake: "Using HAVING instead of WHERE for filtering individual non-aggregated table rows.",
+            quickTip: "WHERE filters rows before aggregation; HAVING filters aggregate groups after GROUP BY.",
+            isTricky: false,
+            trickyExplanation: "",
+            interviewTesting: "Tests standard SQL query clause syntax and execution order.",
+            interviewFollowUp: "What is the complete execution order of clauses in a SQL SELECT statement?",
+            videoLink: "https://www.youtube.com/watch?v=HXV3zeQKqGY"
         },
         {
             id: "s2",
             category: "SQL",
+            topic: "Joins",
             difficulty: "Hard",
-            question: "Which SQL JOIN type returns all records when there is a match in either left or right table?",
+            question: "Which SQL JOIN returns all rows from the Left table, along with matching rows from the Right table, filling NULL for non-matching right records?",
             options: ["INNER JOIN", "LEFT JOIN", "RIGHT JOIN", "FULL OUTER JOIN"],
-            correct: 3,
-            hint: "Think of the set union operation that combines results from both tables regardless of match location.",
-            explanation: "FULL OUTER JOIN combines the results of both LEFT and RIGHT joins, returning all matching records from both tables and NULL for non-matching sides.",
-            solution: [
-                "Step 1: INNER JOIN returns only matching rows.",
-                "Step 2: LEFT JOIN returns all rows from left + matching right.",
-                "Step 3: FULL OUTER JOIN returns all rows from both tables, filling NULLs where no match exists."
-            ],
-            concept: "Relational Algebra & SQL Set Join Types.",
-            quickTip: "FULL OUTER JOIN = Union of Left and Right Joins."
+            correct: 1,
+            hint: "It preserves every record from the table specified on the left side of the JOIN keyword.",
+            explanation: "A LEFT (OUTER) JOIN returns all records from the left table and matched records from the right table. Unmatched right table columns return NULL values.",
+            concept: "Relational Set Operations & SQL Outer Join Types.",
+            commonMistake: "Thinking LEFT JOIN discards left records that do not match the right table (that is INNER JOIN behavior).",
+            quickTip: "LEFT JOIN = All Left rows + Matching Right rows (or NULLs).",
+            isTricky: false,
+            trickyExplanation: "",
+            interviewTesting: "Verifies ability to combine data from multiple relational tables correctly.",
+            interviewFollowUp: "How can you write a query using LEFT JOIN to find rows in Table A that have NO match in Table B?",
+            videoLink: "https://www.youtube.com/watch?v=HXV3zeQKqGY"
+        },
+        {
+            id: "s3",
+            category: "SQL",
+            topic: "Grouping & Aggregation",
+            difficulty: "Medium",
+            question: "Which SQL clause is used to filter grouped aggregated data resulting from a GROUP BY query?",
+            options: ["WHERE", "HAVING", "ORDER BY", "FILTER BY"],
+            correct: 1,
+            hint: "WHERE filters individual rows before grouping, while this clause filters groups after aggregate calculation.",
+            explanation: "The HAVING clause was added to SQL because the WHERE keyword could not be used with aggregate functions (like SUM, COUNT, AVG).",
+            concept: "Aggregate Functions & Group Filtering.",
+            commonMistake: "Attempting to use `WHERE COUNT(id) > 5` instead of `HAVING COUNT(id) > 5`.",
+            quickTip: "Use WHERE for row conditions; use HAVING for aggregate functions.",
+            isTricky: true,
+            trickyExplanation: "Beginners often write `WHERE SUM(price) > 100` which throws a syntax error. Aggregate functions are only valid inside HAVING or SELECT clauses!",
+            interviewTesting: "Assesses SQL query construction involving group metrics.",
+            interviewFollowUp: "Can you use both WHERE and HAVING in the exact same SQL query? Explain.",
+            videoLink: "https://www.youtube.com/watch?v=HXV3zeQKqGY"
+        },
+        {
+            id: "s4",
+            category: "SQL",
+            topic: "SQL Sorting",
+            difficulty: "Easy",
+            question: "Which keyword is used in SQL to sort query results in descending order?",
+            options: ["ORDER BY col DESC", "SORT BY col DOWN", "GROUP BY col DESC", "ARRANGE DESC"],
+            correct: 0,
+            hint: "Combine the ORDER BY clause with the abbreviation for descending.",
+            explanation: "The `ORDER BY column_name DESC` clause sorts the returned records in descending order (highest to lowest or Z to A).",
+            concept: "SQL Result Set Sorting (ASC vs DESC).",
+            commonMistake: "Using non-standard terms like 'DOWN' or 'DECREASING' instead of 'DESC'.",
+            quickTip: "Default sorting is ASC; use DESC explicitly for reverse order.",
+            isTricky: false,
+            trickyExplanation: "",
+            interviewTesting: "Tests basic query result formatting.",
+            interviewFollowUp: "How are NULL values handled during ORDER BY ASC vs DESC in SQL databases?",
+            videoLink: "https://www.youtube.com/watch?v=HXV3zeQKqGY"
         }
     ],
 
@@ -238,36 +407,59 @@ const QUESTION_DATABASE = {
         {
             id: "hc1",
             category: "HTML/CSS",
+            topic: "HTML Basics",
             difficulty: "Easy",
-            question: "Which HTML tag is used to create an inline hyperlink?",
-            options: ["<link>", "<a>", "<href>", "<url>"],
+            question: "Which HTML5 semantic element should be used to enclose major navigation link lists?",
+            options: ["<header>", "<nav>", "<section>", "<aside>"],
             correct: 1,
-            hint: "The tag stands for 'anchor' and uses the 'href' attribute to point to the destination URL.",
-            explanation: "The <a> (anchor) element defines a hyperlink that links one page to another or to an anchor within the same page.",
-            solution: [
-                "Step 1: Identify that <link> is used in <head> for external CSS stylesheets.",
-                "Step 2: Recognize that href is an attribute, not an HTML tag name.",
-                "Step 3: Conclude that <a> (Anchor tag) is the correct HTML element."
-            ],
-            concept: "HTML Links & Hypertext Navigation.",
-            quickTip: "Use <a href='url'>Link Text</a> to build clickable web links."
+            hint: "This tag represents a section of a page whose purpose is to provide navigation links.",
+            explanation: "The <nav> element is intended for major blocks of navigation links, improving accessibility and SEO structure.",
+            concept: "HTML5 Semantic Elements & Web Accessibility.",
+            commonMistake: "Wrapping navigation menus inside generic <div> containers instead of semantic <nav> tags.",
+            quickTip: "Use <nav> for main site menus, breadcrumbs, and pagination links.",
+            isTricky: false,
+            trickyExplanation: "",
+            interviewTesting: "Evaluates modern HTML5 semantic markup and web accessibility standards.",
+            interviewFollowUp: "Why are semantic HTML tags preferred over <div> elements for SEO and screen readers?",
+            videoLink: "https://www.youtube.com/watch?v=mU6anWqZJcc"
         },
         {
             id: "hc2",
             category: "HTML/CSS",
+            topic: "Flexbox",
             difficulty: "Medium",
-            question: "In CSS Flexbox, which property aligns flex items along the cross axis?",
+            question: "In CSS Flexbox, which property aligns flex items along the cross axis (perpendicular to the main axis)?",
             options: ["justify-content", "align-items", "flex-direction", "align-content"],
             correct: 1,
-            hint: "justify-content handles alignment along the main axis, while this property handles alignment along the perpendicular cross axis.",
-            explanation: "align-items sets the align-self value on all direct flex children, aligning them along the cross axis (vertically by default in row layout).",
-            solution: [
-                "Step 1: Differentiate main axis vs. cross axis in Flexbox.",
-                "Step 2: justify-content controls main axis alignment (e.g. horizontal in row mode).",
-                "Step 3: align-items controls cross axis alignment (e.g. vertical in row mode)."
-            ],
-            concept: "CSS Flexible Box Layout Model (Flexbox Alignment).",
-            quickTip: "justify-content = Main Axis | align-items = Cross Axis."
+            hint: "justify-content handles main-axis alignment, while this property handles cross-axis alignment.",
+            explanation: "align-items specifies the default alignment for items inside a flex container along the cross axis (vertically in row layout).",
+            concept: "CSS Flexible Box Layout Model (Main Axis vs Cross Axis Alignment).",
+            commonMistake: "Confusing `justify-content` (main axis) with `align-items` (cross axis).",
+            quickTip: "justify-content = Main Axis | align-items = Cross Axis.",
+            isTricky: false,
+            trickyExplanation: "",
+            interviewTesting: "Tests mastery of CSS Flexbox positioning and layout alignment.",
+            interviewFollowUp: "What happens to the main axis when `flex-direction: column` is set?",
+            videoLink: "https://www.youtube.com/watch?v=mU6anWqZJcc"
+        },
+        {
+            id: "hc3",
+            category: "HTML/CSS",
+            topic: "Box Model & Specificity",
+            difficulty: "Hard",
+            question: "Which CSS box-sizing property value ensures that an element's total width includes padding and borders?",
+            options: ["content-box", "border-box", "padding-box", "margin-box"],
+            correct: 1,
+            hint: "With this property value, width = content + padding + border without expanding the calculated element footprint.",
+            explanation: "`box-sizing: border-box` tells the browser to account for any border and padding in the values specified for an element's width and height.",
+            concept: "CSS Box Model & Element Layout Dimensions.",
+            commonMistake: "Assuming `content-box` (browser default) includes padding in the declared width property.",
+            quickTip: "Apply `* { box-sizing: border-box; }` in CSS resets to prevent layout distortion.",
+            isTricky: true,
+            trickyExplanation: "Under default `content-box`, setting `width: 100px; padding: 10px;` produces a total rendered width of 120px! `border-box` locks total width to 100px.",
+            interviewTesting: "Verifies understanding of CSS rendering engine calculations.",
+            interviewFollowUp: "Explain CSS Selector Specificity scoring (Inline vs ID vs Class vs Element).",
+            videoLink: "https://www.youtube.com/watch?v=mU6anWqZJcc"
         }
     ],
 
@@ -275,41 +467,64 @@ const QUESTION_DATABASE = {
         {
             id: "js1",
             category: "JavaScript",
+            topic: "Variables & Scope",
             difficulty: "Easy",
-            question: "Which keyword is used to declare a variable in JavaScript that cannot be reassigned?",
+            question: "Which keyword is used in ES6 JavaScript to declare block-scoped variables that cannot be reassigned?",
             options: ["var", "let", "const", "static"],
             correct: 2,
-            hint: "This ES6 keyword creates a block-scoped immutable binding that prevents re-assignment.",
-            explanation: "Variables declared with 'const' are block-scoped and cannot be reassigned once bound to a value.",
-            solution: [
-                "Step 1: 'var' is function-scoped and reassignable.",
-                "Step 2: 'let' is block-scoped and reassignable.",
-                "Step 3: 'const' is block-scoped and forbids reassignment."
-            ],
-            concept: "ES6 Variable Declarations (var vs let vs const).",
-            quickTip: "Use 'const' by default unless you know the variable value will change."
+            hint: "This keyword creates a block-scoped immutable binding that prevents reassignment.",
+            explanation: "`const` declarations create read-only block-scoped references that cannot be reassigned after initialization.",
+            concept: "ES6 Variable Scoping (var vs let vs const).",
+            commonMistake: "Thinking `const` makes objects completely immutable (object properties can still be mutated, but reference cannot be reassigned).",
+            quickTip: "Use `const` by default; use `let` when reassignment is expected.",
+            isTricky: false,
+            trickyExplanation: "",
+            interviewTesting: "Assesses foundational understanding of modern JavaScript variable declarations.",
+            interviewFollowUp: "Can you mutate properties of an object declared with `const`? Why?",
+            videoLink: "https://www.youtube.com/watch?v=W6NZfCO5SIk"
         },
         {
             id: "js2",
             category: "JavaScript",
-            difficulty: "Medium",
+            topic: "Closures",
+            difficulty: "Hard",
             question: "What is a Closure in JavaScript?",
             options: [
-                "A function bundled together with references to its lexical scope environment",
-                "A built-in method to close DOM event streams",
-                "A private class keyword",
-                "An event loop termination handler"
+                "A function bundled together with references to its surrounding lexical scope environment",
+                "A method to close active DOM event listeners",
+                "A private class keyword added in ES2022",
+                "An event loop exit signal handler"
             ],
             correct: 0,
-            hint: "Focus on how an inner function retains access to variables declared in its outer scope even after the outer function finishes executing.",
-            explanation: "A closure gives an inner function access to its outer function's scope variables, preserving them even after the outer function execution context is popped off the call stack.",
-            solution: [
-                "Step 1: Understand lexical scoping in JS: inner functions have access to variables in outer scopes.",
-                "Step 2: When an inner function outlives its outer function, it retains references to those outer variables.",
-                "Step 3: This bundle of function + lexical environment is called a Closure."
-            ],
+            hint: "Focus on how an inner function retains access to variables declared in its outer scope even after outer execution finishes.",
+            explanation: "A closure gives an inner function access to its outer function's scope variables, preserving those variables even after the outer function has returned.",
             concept: "JavaScript Execution Context, Lexical Scoping & Closures.",
-            quickTip: "Closures = Inner Function + Outer Lexical Scope Memory."
+            commonMistake: "Thinking closures copy variable values at creation time rather than retaining reference memory.",
+            quickTip: "Closure = Inner Function + Outer Lexical Scope Memory.",
+            isTricky: true,
+            trickyExplanation: "Developers often think closures copy static values, but they retain live references to variables in outer lexical scopes!",
+            interviewTesting: "Tests deep knowledge of JavaScript scoping and memory execution context.",
+            interviewFollowUp: "How can closures be used to create private variables in JavaScript modules?",
+            videoLink: "https://www.youtube.com/watch?v=W6NZfCO5SIk"
+        },
+        {
+            id: "js3",
+            category: "JavaScript",
+            topic: "Promises & Async",
+            difficulty: "Medium",
+            question: "What state is a JavaScript Promise in after `resolve(data)` is invoked successfully?",
+            options: ["pending", "fulfilled", "rejected", "terminated"],
+            correct: 1,
+            hint: "A resolved promise transitions from pending to this completed success state.",
+            explanation: "When a Promise resolves, its state changes from 'pending' to 'fulfilled', triggering attached `.then()` callbacks.",
+            concept: "JavaScript Asynchronous Event Loop & Promise States.",
+            commonMistake: "Confusing 'fulfilled' (resolved) with 'pending' or 'settled'.",
+            quickTip: "Promise States: Pending -> Fulfilled (resolved) OR Rejected.",
+            isTricky: false,
+            trickyExplanation: "",
+            interviewTesting: "Evaluates asynchronous programming models in JavaScript.",
+            interviewFollowUp: "What is the difference between microtasks (Promises) and macrotasks (setTimeout) in the JS Event Loop?",
+            videoLink: "https://www.youtube.com/watch?v=W6NZfCO5SIk"
         }
     ],
 
@@ -317,46 +532,69 @@ const QUESTION_DATABASE = {
         {
             id: "os1",
             category: "OS",
+            topic: "Deadlocks",
             difficulty: "Medium",
             question: "What is a Deadlock in Operating Systems concurrent processing?",
             options: [
                 "A state where a set of processes are permanently blocked because each holds a resource and waits for another held by another process",
-                "A process exceeding maximum RAM allocation limit",
-                "A network connection timeout exception",
+                "A hardware memory overflow exception",
+                "A network timeout error during socket read",
                 "A CPU thread starvation condition"
             ],
             correct: 0,
             hint: "Think of Coffman conditions: Mutual Exclusion, Hold & Wait, No Preemption, and Circular Wait.",
-            explanation: "A Deadlock occurs when two or more processes are unable to proceed because each is waiting for the other to release a resource, causing a circular waiting loop.",
-            solution: [
-                "Step 1: Process A holds Resource 1 and requests Resource 2.",
-                "Step 2: Process B holds Resource 2 and requests Resource 1.",
-                "Step 3: Neither process can proceed, creating a permanent Deadlock state."
-            ],
+            explanation: "A Deadlock occurs when two or more processes cannot proceed because each is waiting for a resource held by the other, resulting in a circular wait condition.",
             concept: "Operating System Process Concurrency & Deadlock Coffman Conditions.",
-            quickTip: "Deadlock = Circular Wait where everyone waits for everyone else."
+            commonMistake: "Confusing Deadlock (permanent circular wait block) with Starvation (indefinite postponement).",
+            quickTip: "Deadlock = Circular Wait where everyone waits for someone else indefinitely.",
+            isTricky: false,
+            trickyExplanation: "",
+            interviewTesting: "Tests knowledge of concurrency pitfalls and deadlock conditions.",
+            interviewFollowUp: "What are the 4 necessary conditions for a deadlock to occur (Coffman conditions)?",
+            videoLink: "https://www.youtube.com/watch?v=vBURTt97EkA"
         },
         {
             id: "os2",
             category: "OS",
+            topic: "Memory Management",
             difficulty: "Hard",
             question: "What is Virtual Memory in Operating Systems?",
             options: [
-                "A memory management capability that uses secondary storage to simulate additional RAM",
-                "GPU VRAM allocation",
-                "Cloud storage sync",
-                "ROM cache"
+                "A memory management technique that uses secondary disk storage to simulate additional physical RAM",
+                "Dedicated GPU Video RAM allocation",
+                "Cloud storage data caching",
+                "ROM BIOS cache memory"
             ],
             correct: 0,
-            hint: "It uses paging and disk swap space so programs can exceed physical RAM size.",
-            explanation: "Virtual Memory creates an illusion to users of a very large main memory by swapping pages between physical RAM and disk storage.",
-            solution: [
-                "Step 1: RAM is limited physical hardware.",
-                "Step 2: OS uses hard drive disk space as swap/pagefile.",
-                "Step 3: Inactive pages are paged out to disk, expanding effective available memory space."
-            ],
-            concept: "Operating System Virtual Memory & Page Swapping.",
-            quickTip: "Virtual Memory = RAM + Disk Swap Space."
+            hint: "It uses paging and disk swap space so execution addresses can exceed physical RAM size.",
+            explanation: "Virtual Memory creates the illusion of a vast physical RAM memory space by swapping inactive memory pages between RAM and disk pagefile storage.",
+            concept: "Operating System Virtual Memory, Page Tables & Demand Paging.",
+            commonMistake: "Believing Virtual Memory is actual physical RAM hardware installed on the motherboard.",
+            quickTip: "Virtual Memory = Physical RAM + Secondary Storage Pagefile Swap.",
+            isTricky: true,
+            trickyExplanation: "Candidates confuse Virtual Memory with CPU cache or VRAM. Virtual memory is an OS software abstraction backed by storage disk paging.",
+            interviewTesting: "Assesses understanding of OS memory abstraction and paging mechanisms.",
+            interviewFollowUp: "What is a Page Fault and how does the OS kernel handle it?",
+            videoLink: "https://www.youtube.com/watch?v=vBURTt97EkA"
+        },
+        {
+            id: "os3",
+            category: "OS",
+            topic: "CPU Scheduling",
+            difficulty: "Medium",
+            question: "Which CPU scheduling algorithm allocates execution time to processes in equal fixed time slices (time quanta)?",
+            options: ["First-Come First-Served (FCFS)", "Round Robin (RR)", "Shortest Job First (SJF)", "Priority Scheduling"],
+            correct: 1,
+            hint: "Think of a circular queue where each process receives a turn for a small unit of CPU time.",
+            explanation: "Round Robin scheduling assigns a fixed time quantum to each process in a cyclic queue, providing fair preemptive multi-tasking.",
+            concept: "Preemptive CPU Scheduling Algorithms.",
+            commonMistake: "Thinking Round Robin is non-preemptive like FCFS.",
+            quickTip: "Round Robin uses time slices (quanta) for interactive time-sharing.",
+            isTricky: false,
+            trickyExplanation: "",
+            interviewTesting: "Evaluates process management and scheduling strategies.",
+            interviewFollowUp: "What happens to context switching overhead when the Round Robin time quantum becomes extremely small?",
+            videoLink: "https://www.youtube.com/watch?v=vBURTt97EkA"
         }
     ],
 
@@ -364,36 +602,64 @@ const QUESTION_DATABASE = {
         {
             id: "cn1",
             category: "Computer Networks",
+            topic: "OSI Model",
             difficulty: "Easy",
-            question: "In Computer Networks, which layer of the 7-layer OSI model is responsible for logical IP addressing and packet routing?",
-            options: ["Data Link Layer", "Network Layer", "Transport Layer", "Session Layer"],
+            question: "In the 7-layer OSI Model, which layer is responsible for logical IP addressing and packet routing across subnets?",
+            options: ["Data Link Layer (Layer 2)", "Network Layer (Layer 3)", "Transport Layer (Layer 4)", "Session Layer (Layer 5)"],
             correct: 1,
-            hint: "Routers operate at Layer 3 of the OSI model using IP addresses to route packets across subnets.",
-            explanation: "The Network Layer (Layer 3) handles logical IP addressing, packet forwarding, and routing across heterogeneous networks.",
-            solution: [
-                "Step 1: Layer 2 (Data Link) uses MAC addresses and switches.",
-                "Step 2: Layer 3 (Network) uses IP addresses and routers.",
-                "Step 3: Layer 4 (Transport) uses TCP/UDP ports."
-            ],
-            concept: "OSI 7-Layer Reference Model & IP Routing Architecture.",
-            quickTip: "Layer 3 = Network Layer (IP Addresses & Routers)."
+            hint: "Routers operate at Layer 3 using logical IP addresses to forward packets across networks.",
+            explanation: "The Network Layer (Layer 3) handles logical IP addressing, packet routing, and path determination across interconnected networks.",
+            concept: "OSI 7-Layer Reference Model & Network Layer Routing.",
+            commonMistake: "Confusing Layer 2 (Data Link - MAC addresses/Switches) with Layer 3 (Network - IP addresses/Routers).",
+            quickTip: "Layer 2 = MAC/Switches | Layer 3 = IP/Routers | Layer 4 = Ports/TCP.",
+            isTricky: false,
+            trickyExplanation: "",
+            interviewTesting: "Tests core networking architecture and OSI layer responsibilities.",
+            interviewFollowUp: "Which network device operates at Layer 2 vs Layer 3 of the OSI model?",
+            videoLink: "https://www.youtube.com/watch?v=IPvYjXCsTg8"
         },
         {
             id: "cn2",
             category: "Computer Networks",
+            topic: "Transport Layer",
             difficulty: "Medium",
-            question: "In TCP/IP networking, which transport layer protocol guarantees reliable, connection-oriented data delivery?",
+            question: "Which Transport Layer protocol provides reliable, connection-oriented data transmission using a 3-way handshake?",
             options: ["UDP", "IP", "TCP", "ICMP"],
             correct: 2,
-            hint: "This protocol uses a 3-way handshake (SYN, SYN-ACK, ACK) to establish connection state.",
-            explanation: "TCP (Transmission Control Protocol) is connection-oriented, offering reliable, ordered, and error-checked delivery of stream packets.",
-            solution: [
-                "Step 1: UDP is connectionless and unacknowledged.",
-                "Step 2: TCP performs 3-way handshake and handles packet acknowledgments.",
-                "Step 3: Therefore, TCP provides guaranteed reliable data stream delivery."
-            ],
+            hint: "This protocol uses SYN, SYN-ACK, ACK packets to establish a connection before data transfer.",
+            explanation: "TCP (Transmission Control Protocol) is connection-oriented, offering reliable, ordered, and error-checked stream delivery.",
             concept: "Transport Layer Protocols - TCP vs UDP.",
-            quickTip: "TCP = Reliable & Connection-oriented | UDP = Fast & Connectionless."
+            commonMistake: "Selecting UDP (which is connectionless and does not guarantee packet delivery).",
+            quickTip: "TCP = Connection-oriented & Guaranteed Delivery | UDP = Fast & Connectionless.",
+            isTricky: false,
+            trickyExplanation: "",
+            interviewTesting: "Assesses transport protocol selection for software applications.",
+            interviewFollowUp: "Explain the TCP 3-way handshake process (SYN, SYN-ACK, ACK).",
+            videoLink: "https://www.youtube.com/watch?v=IPvYjXCsTg8"
+        },
+        {
+            id: "cn3",
+            category: "Computer Networks",
+            topic: "IP Addressing & Subnetting",
+            difficulty: "Hard",
+            question: "What is the primary function of DNS (Domain Name System) on the Internet?",
+            options: [
+                "Translating human-readable domain names (e.g., example.com) into numerical IP addresses",
+                "Encrypting HTTP traffic payload",
+                "Assigning dynamic local IP addresses to host devices",
+                "Filtering malicious network packets at the gateway"
+            ],
+            correct: 0,
+            hint: "Think of DNS as the phonebook of the Internet.",
+            explanation: "DNS translates domain names that humans can memorize into machine-readable IP addresses required for network routing.",
+            concept: "Application Layer Protocols & Domain Resolution.",
+            commonMistake: "Confusing DNS (name resolution) with DHCP (IP address assignment).",
+            quickTip: "DNS = Domain to IP Translation | DHCP = Auto IP Assignment.",
+            isTricky: false,
+            trickyExplanation: "",
+            interviewTesting: "Tests understanding of essential Internet application protocols.",
+            interviewFollowUp: "What happens step-by-step when you type a URL into your browser address bar?",
+            videoLink: "https://www.youtube.com/watch?v=IPvYjXCsTg8"
         }
     ]
 };

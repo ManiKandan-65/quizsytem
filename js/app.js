@@ -1,16 +1,17 @@
 /* ==========================================================================
    QuizSystem - Master EdTech Application Engine
+   Upgraded Platform: Quiz + Personalized Learning + Placement Interview Prep
    Handles:
    - Navigation Routing & Section Visibility
-   - Gamified XP, Levels, Badges, & Daily Streaks
-   - Exam Mode vs Learning Mode Execution
-   - Interactive Question Palette (4 States: Current, Answered, Unanswered, Marked)
-   - Pre-submission Hints, Post-submission Solutions (WHY, HOW, CONCEPT, TIP)
-   - Question Bookmarks & Personal Notes Engine
-   - Daily Challenge System
-   - Local Leaderboard & History
-   - Settings & Data Reset Controls
-   - Animated Toast Notifications
+   - Gamified XP, Skill Levels (1-5), Badges, & Daily Streaks
+   - Smart Weak-Subject Detection & Visual Weakness Heatmaps
+   - Confidence vs Accuracy Tracking (Not Sure, Somewhat Sure, Very Sure)
+   - Beat Your Previous Score Comparison
+   - Time Analysis (Per-question time tracking)
+   - Technical Placement Interview Prep Mode
+   - Saved Mistakes Notebook ("My Mistakes") & Targeted Practice Loops
+   - Recommended YouTube Video Tutorials (Embeds / Modals)
+   - Tricky Question Annotations & Detailed Step-by-Step Solutions
    ========================================================================== */
 
 const QuizState = {
@@ -18,16 +19,19 @@ const QuizState = {
     categoryKey: "java",
     categoryName: "Java",
     difficulty: "Easy",
-    mode: "exam",          // "exam" or "learning"
+    mode: "exam",          // "exam", "learning", "weak_mix", "mistakes_only"
     questionLimit: 10,
     timeLimitSeconds: 300,
     remainingSeconds: 300,
     timerInterval: null,
     startTime: null,
+    currentQuestionStartTime: null,
 
     questions: [],
     currentIndex: 0,
     userAnswers: {},       // { questionId: optionIdx }
+    userConfidence: {},    // { questionId: "Not Sure" | "Somewhat Sure" | "Very Sure" }
+    perQuestionTime: {},   // { questionId: secondsSpent }
     markedForReview: {},   // { questionId: true/false }
     hintsUsed: {},         // { questionId: true/false }
     learningFeedback: {},  // { questionId: true/false } for Learning Mode instant feedback
@@ -43,7 +47,9 @@ const CATEGORY_NAMES = {
     html_css: "HTML/CSS",
     javascript: "JavaScript",
     os: "OS",
-    cn: "Computer Networks"
+    cn: "Computer Networks",
+    weak_mix: "Weak Areas Practice",
+    mistakes_only: "My Mistakes Practice"
 };
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -57,8 +63,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (nameInput && savedName) nameInput.value = savedName;
     if (profileNameInput && savedName) profileNameInput.value = savedName;
 
-    // 3. Render All Views & Dashboard Analytics
+    // 3. Render Views & Analytics
     renderUserDashboard();
+    renderInterviewMode();
+    renderMistakesNotebook();
     renderLeaderboard();
     renderHistory();
     renderAchievements();
@@ -75,10 +83,11 @@ document.addEventListener("DOMContentLoaded", () => {
 function showSection(sectionId) {
     const sections = [
         "landingSection", "userDashboardSection", "categoriesSection",
-        "quizSetupSection", "quizDashboard", "resultSection", "reviewSection",
-        "weakReviewSection", "bookmarksSection", "dailyChallengeSection",
-        "leaderboardSection", "historySection", "achievementsSection",
-        "profileSection", "settingsSection", "aboutSection", "faqSection", "contactSection"
+        "interviewModeSection", "mistakesSection", "quizSetupSection", 
+        "quizDashboard", "resultSection", "reviewSection", "weakReviewSection", 
+        "bookmarksSection", "dailyChallengeSection", "leaderboardSection", 
+        "historySection", "achievementsSection", "profileSection", 
+        "settingsSection", "aboutSection", "faqSection", "contactSection"
     ];
 
     sections.forEach(id => {
@@ -92,8 +101,10 @@ function showSection(sectionId) {
         activeEl.scrollIntoView({ behavior: "smooth" });
     }
 
-    // Refresh specific section data upon view
+    // Refresh view data upon display
     if (sectionId === "userDashboardSection") renderUserDashboard();
+    if (sectionId === "interviewModeSection") renderInterviewMode();
+    if (sectionId === "mistakesSection") renderMistakesNotebook();
     if (sectionId === "leaderboardSection") renderLeaderboard();
     if (sectionId === "historySection") renderHistory();
     if (sectionId === "achievementsSection") renderAchievements();
@@ -102,7 +113,6 @@ function showSection(sectionId) {
 }
 
 function setupEventListeners() {
-    // Theme Toggle Button
     const themeBtn = document.getElementById("themeToggleBtn");
     if (themeBtn) {
         themeBtn.addEventListener("click", () => {
@@ -115,7 +125,6 @@ function setupEventListeners() {
         updateThemeIcon(StorageEngine.getTheme());
     }
 
-    // Mobile Hamburger Menu Toggle
     const hamburger = document.getElementById("hamburger");
     const navMenu = document.getElementById("navMenu");
     if (hamburger && navMenu) {
@@ -130,7 +139,6 @@ function setupEventListeners() {
         });
     }
 
-    // FAQ Accordion Toggle
     document.querySelectorAll(".faq-question").forEach(q => {
         q.addEventListener("click", () => {
             q.parentElement.classList.toggle("active");
@@ -170,13 +178,37 @@ function showToast(message, type = "info") {
 }
 
 /**
- * Open Quiz Setup Screen / Pre-select Category
+ * Open Quiz Setup Screen
  */
 function openQuizSetup(catKey) {
     if (catKey) {
         const catSelect = document.getElementById("setupCategory");
         if (catSelect) catSelect.value = catKey;
     }
+    showSection("quizSetupSection");
+}
+
+function startWeakPractice() {
+    const analysis = StorageEngine.getWeakSubjectsAnalysis();
+    let weakCats = analysis.weak.map(w => w.category.toLowerCase().replace('/', '_'));
+    if (weakCats.length === 0) {
+        weakCats = ["dbms", "oop", "sql", "java"];
+    }
+
+    const catSelect = document.getElementById("setupCategory");
+    if (catSelect) catSelect.value = "weak_mix";
+    showSection("quizSetupSection");
+}
+
+function startPracticeMyMistakes() {
+    const mistakes = StorageEngine.getMistakes();
+    if (mistakes.length === 0) {
+        showToast("No mistakes saved in your notebook yet! Complete a quiz to save wrong answers.", "info");
+        return;
+    }
+
+    const catSelect = document.getElementById("setupCategory");
+    if (catSelect) catSelect.value = "mistakes_only";
     showSection("quizSetupSection");
 }
 
@@ -193,312 +225,193 @@ function shuffleArray(array) {
 }
 
 /**
- * Start Quiz Test Execution
+ * Start Quiz Execution
  */
 function startQuiz(event) {
     if (event) event.preventDefault();
 
-    const nameInput = document.getElementById("setupPlayerName");
-    const catSelect = document.getElementById("setupCategory");
-    const diffSelect = document.getElementById("setupDifficulty");
-    const countSelect = document.getElementById("setupCount");
-    const modeSelect = document.getElementById("setupMode");
-    const timerSelect = document.getElementById("setupTimer");
+    const playerName = document.getElementById("setupPlayerName")?.value || "Developer";
+    const categoryKey = document.getElementById("setupCategory")?.value || "java";
+    const difficulty = document.getElementById("setupDifficulty")?.value || "Medium";
+    const count = parseInt(document.getElementById("setupCount")?.value || "10", 10);
+    const mode = document.getElementById("setupMode")?.value || "exam";
+    const timerVal = document.getElementById("setupTimer")?.value || "300";
 
-    const playerName = nameInput ? nameInput.value.trim() : "Developer";
-    if (!playerName) {
-        alert("Please enter your name to start.");
-        if (nameInput) nameInput.focus();
-        return;
+    StorageEngine.setPlayerName(playerName);
+
+    // Prepare Question Pool
+    let questionPool = [];
+
+    if (categoryKey === "weak_mix") {
+        const analysis = StorageEngine.getWeakSubjectsAnalysis();
+        const weakCategoryNames = analysis.weak.map(w => w.category);
+        const categoriesToUse = weakCategoryNames.length > 0 ? weakCategoryNames : ["DBMS", "OOP", "SQL", "Java"];
+        
+        Object.keys(QUESTION_DATABASE).forEach(cat => {
+            QUESTION_DATABASE[cat].forEach(q => {
+                if (categoriesToUse.includes(q.category)) {
+                    questionPool.push(q);
+                }
+            });
+        });
+    } else if (categoryKey === "mistakes_only") {
+        const mistakes = StorageEngine.getMistakes();
+        questionPool = mistakes.map(m => m.questionObj);
+    } else {
+        const catKeyClean = categoryKey === "html_css" ? "html_css" : categoryKey;
+        const pool = QUESTION_DATABASE[catKeyClean] || QUESTION_DATABASE.java;
+        
+        if (difficulty === "All") {
+            questionPool = [...pool];
+        } else {
+            questionPool = pool.filter(q => q.difficulty === difficulty);
+            if (questionPool.length < count) {
+                questionPool = [...pool];
+            }
+        }
     }
 
-    const catKey = catSelect ? catSelect.value : "java";
-    const difficulty = diffSelect ? diffSelect.value : "Easy";
-    const count = countSelect ? parseInt(countSelect.value, 10) : 10;
-    const mode = modeSelect ? modeSelect.value : "exam";
-    const timerVal = timerSelect ? timerSelect.value : "300";
+    if (questionPool.length === 0) {
+        showToast("No questions found for the selected criteria.", "warning");
+        questionPool = [...QUESTION_DATABASE.java];
+    }
 
-    // Fetch Question Pool
-    const pool = QUESTION_DATABASE[catKey] || QUESTION_DATABASE.java;
-    let filtered = pool.filter(q => q.difficulty === difficulty);
-    if (filtered.length < 3) filtered = pool;
+    const shuffled = shuffleArray(questionPool);
+    const selectedQuestions = shuffled.slice(0, Math.min(count, shuffled.length));
 
-    let randomized = shuffleArray(filtered);
-    if (randomized.length > count) randomized = randomized.slice(0, count);
-
-    // Shuffling Options while maintaining correct index
-    const processedQuestions = randomized.map(q => {
-        const correctText = q.options[q.correct];
-        const shuffledOptions = shuffleArray(q.options);
-        const newCorrectIdx = shuffledOptions.indexOf(correctText);
-
-        return {
-            ...q,
-            options: shuffledOptions,
-            correct: newCorrectIdx
-        };
-    });
-
+    // Reset QuizState
     QuizState.playerName = playerName;
-    QuizState.categoryKey = catKey;
-    QuizState.categoryName = CATEGORY_NAMES[catKey] || "Technical Quiz";
+    QuizState.categoryKey = categoryKey;
+    QuizState.categoryName = CATEGORY_NAMES[categoryKey] || "Quiz";
     QuizState.difficulty = difficulty;
     QuizState.mode = mode;
-    QuizState.questionLimit = processedQuestions.length;
-    QuizState.questions = processedQuestions;
+    QuizState.questionLimit = selectedQuestions.length;
+    QuizState.questions = selectedQuestions;
     QuizState.currentIndex = 0;
     QuizState.userAnswers = {};
+    QuizState.userConfidence = {};
+    QuizState.perQuestionTime = {};
     QuizState.markedForReview = {};
     QuizState.hintsUsed = {};
     QuizState.learningFeedback = {};
     QuizState.isSubmitted = false;
     QuizState.isDailyChallenge = false;
-    QuizState.startTime = new Date();
+    QuizState.startTime = Date.now();
+    QuizState.currentQuestionStartTime = Date.now();
+
+    // Timer Setup
+    if (QuizState.timerInterval) clearInterval(QuizState.timerInterval);
 
     if (timerVal === "none") {
         QuizState.timeLimitSeconds = null;
-        QuizState.remainingSeconds = null;
+        const timerBadge = document.getElementById("dashTimerBadge");
+        if (timerBadge) timerBadge.textContent = "⏱️ No Limit";
     } else {
         QuizState.timeLimitSeconds = parseInt(timerVal, 10);
         QuizState.remainingSeconds = QuizState.timeLimitSeconds;
-    }
-
-    showSection("quizDashboard");
-    startTimer();
-    renderCurrentQuestion();
-    renderQuestionPalette();
-}
-
-/**
- * Start Daily Challenge Execution (5 Random Questions)
- */
-function startDailyChallenge() {
-    const dailyData = StorageEngine.getDailyChallengeData();
-    if (dailyData.completed) {
-        alert("You have already completed today's Daily Challenge! Check back tomorrow.");
-        return;
-    }
-
-    // Pick 5 random questions across all categories
-    const allQuestions = [];
-    Object.keys(QUESTION_DATABASE).forEach(cat => {
-        allQuestions.push(...QUESTION_DATABASE[cat]);
-    });
-
-    const shuffled = shuffleArray(allQuestions).slice(0, 5);
-    const processedQuestions = shuffled.map(q => {
-        const correctText = q.options[q.correct];
-        const shuffledOptions = shuffleArray(q.options);
-        return {
-            ...q,
-            options: shuffledOptions,
-            correct: shuffledOptions.indexOf(correctText)
-        };
-    });
-
-    QuizState.playerName = StorageEngine.getPlayerName();
-    QuizState.categoryKey = "daily_challenge";
-    QuizState.categoryName = "Daily Challenge";
-    QuizState.difficulty = "Adaptive";
-    QuizState.mode = "exam";
-    QuizState.questionLimit = 5;
-    QuizState.questions = processedQuestions;
-    QuizState.currentIndex = 0;
-    QuizState.userAnswers = {};
-    QuizState.markedForReview = {};
-    QuizState.hintsUsed = {};
-    QuizState.learningFeedback = {};
-    QuizState.isSubmitted = false;
-    QuizState.isDailyChallenge = true;
-    QuizState.startTime = new Date();
-    QuizState.timeLimitSeconds = 300;
-    QuizState.remainingSeconds = 300;
-
-    showSection("quizDashboard");
-    startTimer();
-    renderCurrentQuestion();
-    renderQuestionPalette();
-}
-
-/**
- * Start Weak Questions Practice Session
- */
-function startWeakPractice() {
-    const history = StorageEngine.getHistory();
-    const wrongQuestionIds = new Set();
-
-    history.forEach(h => {
-        if (h.questions && h.userAnswers) {
-            h.questions.forEach(q => {
-                if (h.userAnswers[q.id] !== q.correct) {
-                    wrongQuestionIds.add(q.id);
-                }
-            });
-        }
-    });
-
-    const allQuestions = [];
-    Object.keys(QUESTION_DATABASE).forEach(cat => {
-        allQuestions.push(...QUESTION_DATABASE[cat]);
-    });
-
-    let weakPool = allQuestions.filter(q => wrongQuestionIds.has(q.id));
-    if (weakPool.length === 0) weakPool = allQuestions;
-
-    const processed = shuffleArray(weakPool).slice(0, 10).map(q => {
-        const correctText = q.options[q.correct];
-        const shuffledOptions = shuffleArray(q.options);
-        return {
-            ...q,
-            options: shuffledOptions,
-            correct: shuffledOptions.indexOf(correctText)
-        };
-    });
-
-    QuizState.playerName = StorageEngine.getPlayerName();
-    QuizState.categoryKey = "weak_practice";
-    QuizState.categoryName = "Practice Weak Questions";
-    QuizState.difficulty = "Adaptive";
-    QuizState.mode = "learning"; // Practice weak questions in Learning Mode
-    QuizState.questionLimit = processed.length;
-    QuizState.questions = processed;
-    QuizState.currentIndex = 0;
-    QuizState.userAnswers = {};
-    QuizState.markedForReview = {};
-    QuizState.hintsUsed = {};
-    QuizState.learningFeedback = {};
-    QuizState.isSubmitted = false;
-    QuizState.isDailyChallenge = false;
-    QuizState.startTime = new Date();
-    QuizState.timeLimitSeconds = 300;
-    QuizState.remainingSeconds = 300;
-
-    showSection("quizDashboard");
-    startTimer();
-    renderCurrentQuestion();
-    renderQuestionPalette();
-}
-
-/**
- * Countdown Timer
- */
-function startTimer() {
-    clearInterval(QuizState.timerInterval);
-    const badge = document.getElementById("dashTimerBadge");
-    if (!badge) return;
-
-    if (QuizState.remainingSeconds === null) {
-        badge.textContent = "⏱️ No Timer";
-        badge.className = "badge badge-info";
-        return;
-    }
-
-    updateTimerDisplay();
-
-    QuizState.timerInterval = setInterval(() => {
-        QuizState.remainingSeconds--;
         updateTimerDisplay();
-
-        if (QuizState.remainingSeconds <= 0) {
-            clearInterval(QuizState.timerInterval);
-            alert("⏰ Time is up! Your quiz will now be submitted automatically.");
-            submitQuiz();
-        }
-    }, 1000);
-}
-
-function updateTimerDisplay() {
-    const badge = document.getElementById("dashTimerBadge");
-    if (!badge || QuizState.remainingSeconds === null) return;
-
-    const mins = Math.floor(QuizState.remainingSeconds / 60);
-    const secs = QuizState.remainingSeconds % 60;
-    badge.textContent = `⏱️ ${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-
-    if (QuizState.remainingSeconds <= 60) {
-        badge.className = "badge badge-danger timer-warning";
-    } else {
-        badge.className = "badge badge-info";
+        QuizState.timerInterval = setInterval(handleTimerTick, 1000);
     }
+
+    // Render Quiz Header
+    const catHeader = document.getElementById("dashCategory");
+    const nameHeader = document.getElementById("dashPlayerName");
+    const diffBadge = document.getElementById("dashDifficulty");
+
+    if (catHeader) catHeader.textContent = QuizState.categoryName;
+    if (nameHeader) nameHeader.textContent = QuizState.playerName;
+    if (diffBadge) diffBadge.textContent = QuizState.difficulty;
+
+    showSection("quizDashboard");
+    renderQuestion(0);
+    renderQuestionPalette();
 }
 
 /**
- * Render Current Question Area
+ * Per-Question Time Tracker Helper
  */
-function renderCurrentQuestion() {
-    const q = QuizState.questions[QuizState.currentIndex];
+function recordTimeForCurrentQuestion() {
+    if (QuizState.currentQuestionStartTime && QuizState.questions[QuizState.currentIndex]) {
+        const qId = QuizState.questions[QuizState.currentIndex].id;
+        const elapsed = Math.round((Date.now() - QuizState.currentQuestionStartTime) / 1000);
+        QuizState.perQuestionTime[qId] = (QuizState.perQuestionTime[qId] || 0) + elapsed;
+    }
+    QuizState.currentQuestionStartTime = Date.now();
+}
+
+/**
+ * Render Current Question Card
+ */
+function renderQuestion(index) {
+    recordTimeForCurrentQuestion();
+    QuizState.currentIndex = index;
+    const q = QuizState.questions[index];
     if (!q) return;
 
-    document.getElementById("dashPlayerName").textContent = QuizState.playerName;
-    document.getElementById("dashCategory").textContent = QuizState.categoryName;
-    document.getElementById("dashDifficulty").textContent = QuizState.difficulty;
+    // Badges & Counters
+    const qBadge = document.getElementById("qNumberBadge");
+    const qProgressText = document.getElementById("dashProgressText");
+    const qProgressBarFill = document.getElementById("dashProgressBarFill");
+    const trickyBadge = document.getElementById("trickyBadge");
 
-    document.getElementById("qNumberBadge").textContent = `Question ${QuizState.currentIndex + 1} of ${QuizState.questions.length}`;
-    document.getElementById("qText").textContent = q.question;
+    if (qBadge) qBadge.textContent = `Question ${index + 1} of ${QuizState.questionLimit}`;
+    if (qProgressText) qProgressText.textContent = `Question ${index + 1} of ${QuizState.questionLimit}`;
+    if (qProgressBarFill) {
+        const pct = ((index + 1) / QuizState.questionLimit) * 100;
+        qProgressBarFill.style.width = `${pct}%`;
+    }
 
-    // Render Option Cards
-    const grid = document.getElementById("qOptionsGrid");
-    grid.innerHTML = "";
+    if (trickyBadge) {
+        trickyBadge.style.display = q.isTricky ? "inline-block" : "none";
+    }
 
-    const selectedIdx = QuizState.userAnswers[q.id];
+    // Question Text
+    const qText = document.getElementById("qText");
+    if (qText) qText.textContent = q.question;
 
-    q.options.forEach((optText, optIdx) => {
-        const isChecked = selectedIdx === optIdx;
+    // Options Grid
+    const optionsGrid = document.getElementById("qOptionsGrid");
+    if (optionsGrid) {
+        optionsGrid.innerHTML = "";
+        q.options.forEach((optText, optIdx) => {
+            const card = document.createElement("div");
+            card.className = "option-card";
+            if (QuizState.userAnswers[q.id] === optIdx) {
+                card.classList.add("selected");
+            }
 
-        const label = document.createElement("label");
-        label.className = `option-card ${isChecked ? 'selected' : ''}`;
-        label.onclick = () => selectOption(q.id, optIdx);
-
-        label.innerHTML = `
-            <input type="radio" name="q_opt" value="${optIdx}" ${isChecked ? 'checked' : ''}>
-            <span class="option-prefix">${String.fromCharCode(65 + optIdx)}</span>
-            <span class="option-text-val">${optText}</span>
-        `;
-
-        grid.appendChild(label);
-    });
-
-    // Learning Mode Instant Feedback Container
-    const learningBox = document.getElementById("learningFeedbackBox");
-    if (learningBox) {
-        if (QuizState.mode === "learning" && selectedIdx !== undefined) {
-            const isCorrect = selectedIdx === q.correct;
-            learningBox.style.display = "block";
-            learningBox.className = `explanation-details-box ${isCorrect ? 'user-correct' : 'user-wrong'}`;
-
-            learningBox.innerHTML = `
-                <div style="font-weight: 800; font-size: 1.1rem; margin-bottom: 0.5rem; color: ${isCorrect ? 'var(--success-color)' : 'var(--danger-color)'};">
-                    ${isCorrect ? '✓ Correct Answer!' : '✕ Incorrect Selection'}
-                </div>
-                <div class="exp-block">
-                    <span class="exp-badge">🧠 WHY?</span>
-                    <p>${q.explanation}</p>
-                </div>
-                ${q.solution && q.solution.length > 0 ? `
-                    <div class="exp-block">
-                        <span class="exp-badge">⚙️ HOW TO SOLVE:</span>
-                        <ul class="solution-steps-list">
-                            ${q.solution.map(s => `<li>${s}</li>`).join('')}
-                        </ul>
-                    </div>
-                ` : ''}
-                <div class="exp-block">
-                    <span class="exp-badge">📚 CONCEPT:</span>
-                    <p>${q.concept}</p>
-                </div>
-                ${q.quickTip ? `<div class="exp-block"><span class="exp-badge">💡 QUICK TIP:</span><p>${q.quickTip}</p></div>` : ''}
+            const prefix = String.fromCharCode(65 + optIdx);
+            card.innerHTML = `
+                <span class="option-prefix">${prefix}</span>
+                <span class="option-text-val">${optText}</span>
             `;
+
+            card.addEventListener("click", () => selectOption(optIdx));
+            optionsGrid.appendChild(card);
+        });
+    }
+
+    // Confidence Selector State
+    updateConfidenceButtonsUI(q.id);
+
+    // Pre-submission Hint Box
+    const hintBox = document.getElementById("qHintCard");
+    const hintText = document.getElementById("qHintText");
+    if (hintBox && hintText) {
+        if (QuizState.hintsUsed[q.id]) {
+            hintBox.style.display = "block";
+            hintText.textContent = q.hint || "Focus on key domain principles.";
         } else {
-            learningBox.style.display = "none";
+            hintBox.style.display = "none";
         }
     }
 
     // Bookmark & Note Buttons State
     const bmBtn = document.getElementById("bookmarkBtn");
-    const isBookmarked = StorageEngine.isBookmarked(q.id);
     if (bmBtn) {
-        bmBtn.className = isBookmarked ? "btn btn-warning" : "btn btn-outline";
-        bmBtn.innerHTML = isBookmarked ? "📌 Bookmarked" : "📌 Bookmark";
+        const isBm = StorageEngine.isBookmarked(q.id);
+        bmBtn.textContent = isBm ? "📌 Bookmarked" : "📌 Bookmark";
+        bmBtn.className = isBm ? "btn btn-primary" : "btn btn-outline";
     }
 
     const noteInput = document.getElementById("questionNoteInput");
@@ -506,62 +419,69 @@ function renderCurrentQuestion() {
         noteInput.value = StorageEngine.getNoteForQuestion(q.id);
     }
 
-    // Hint Card Handling
-    const hintCard = document.getElementById("qHintCard");
-    const hintText = document.getElementById("qHintText");
-    const hintBtn = document.getElementById("toggleHintBtn");
-
-    if (hintCard && hintText) {
-        hintText.textContent = q.hint || "Think carefully about the core concepts of this topic.";
-        if (QuizState.hintsUsed[q.id]) {
-            hintCard.style.display = "block";
-            if (hintBtn) hintBtn.textContent = "💡 Hide Hint";
+    // Learning Mode Instant Feedback Box
+    const feedbackBox = document.getElementById("learningFeedbackBox");
+    if (feedbackBox) {
+        if (QuizState.mode === "learning" && QuizState.userAnswers[q.id] !== undefined) {
+            renderLearningFeedback(q, feedbackBox);
         } else {
-            hintCard.style.display = "none";
-            if (hintBtn) hintBtn.textContent = "💡 Need a Hint?";
+            feedbackBox.style.display = "none";
         }
     }
 
-    // Mark for Review Button State
-    const markBtn = document.getElementById("markReviewBtn");
-    const isMarked = QuizState.markedForReview[q.id];
-    if (markBtn) {
-        markBtn.className = isMarked ? "btn btn-warning" : "btn btn-outline";
-        markBtn.innerHTML = isMarked ? "🔖 Marked for Review" : "🔖 Mark for Review";
-    }
-
-    // Navigation Buttons State
+    // Nav Buttons
     const prevBtn = document.getElementById("prevQBtn");
     const nextBtn = document.getElementById("nextQBtn");
-    const submitBtn = document.getElementById("submitQuizBtn");
+    const markBtn = document.getElementById("markReviewBtn");
 
-    if (prevBtn) prevBtn.disabled = QuizState.currentIndex === 0;
-
-    if (QuizState.currentIndex === QuizState.questions.length - 1) {
-        if (nextBtn) nextBtn.style.display = "none";
-        if (submitBtn) submitBtn.style.display = "inline-flex";
-    } else {
-        if (nextBtn) nextBtn.style.display = "inline-flex";
-        if (submitBtn) submitBtn.style.display = "inline-flex";
+    if (prevBtn) prevBtn.disabled = index === 0;
+    if (nextBtn) nextBtn.disabled = index === QuizState.questionLimit - 1;
+    if (markBtn) {
+        markBtn.textContent = QuizState.markedForReview[q.id] ? "🔖 Marked" : "🔖 Mark for Review";
+        markBtn.className = QuizState.markedForReview[q.id] ? "btn btn-warning" : "btn btn-outline";
     }
-
-    // Header Progress Bar & Side Counters
-    const qCount = QuizState.questions.length;
-    const answeredCount = Object.keys(QuizState.userAnswers).length;
-
-    document.getElementById("dashProgressText").textContent = `Question ${QuizState.currentIndex + 1} of ${qCount}`;
-    document.getElementById("dashProgressBarFill").style.width = `${((QuizState.currentIndex + 1) / qCount) * 100}%`;
-
-    document.getElementById("sideAnsweredCount").textContent = answeredCount;
-    document.getElementById("sideUnansweredCount").textContent = qCount - answeredCount;
-    document.getElementById("sideMarkedCount").textContent = Object.values(QuizState.markedForReview).filter(Boolean).length;
 
     renderQuestionPalette();
 }
 
-function selectOption(questionId, optionIndex) {
-    QuizState.userAnswers[questionId] = optionIndex;
-    renderCurrentQuestion();
+/**
+ * Confidence Selector UI Handler
+ */
+function selectConfidence(level) {
+    const q = QuizState.questions[QuizState.currentIndex];
+    if (!q) return;
+
+    QuizState.userConfidence[q.id] = level;
+    updateConfidenceButtonsUI(q.id);
+}
+
+function updateConfidenceButtonsUI(qId) {
+    const selectedLevel = QuizState.userConfidence[qId];
+    
+    const btnUnsure = document.getElementById("confUnsure");
+    const btnSomewhat = document.getElementById("confSomewhat");
+    const btnVery = document.getElementById("confVery");
+
+    if (btnUnsure) btnUnsure.classList.toggle("selected", selectedLevel === "Not Sure");
+    if (btnSomewhat) btnSomewhat.classList.toggle("selected", selectedLevel === "Somewhat Sure");
+    if (btnVery) btnVery.classList.toggle("selected", selectedLevel === "Very Sure");
+}
+
+/**
+ * Option Selection Handler
+ */
+function selectOption(optIdx) {
+    const q = QuizState.questions[QuizState.currentIndex];
+    if (!q) return;
+
+    QuizState.userAnswers[q.id] = optIdx;
+
+    // Default confidence to "Very Sure" if not explicitly selected yet
+    if (!QuizState.userConfidence[q.id]) {
+        QuizState.userConfidence[q.id] = "Somewhat Sure";
+    }
+
+    renderQuestion(QuizState.currentIndex);
 }
 
 function toggleHint() {
@@ -569,15 +489,16 @@ function toggleHint() {
     if (!q) return;
 
     QuizState.hintsUsed[q.id] = !QuizState.hintsUsed[q.id];
-    renderCurrentQuestion();
+    renderQuestion(QuizState.currentIndex);
 }
 
-function toggleMarkForReview() {
+function saveCurrentNote() {
     const q = QuizState.questions[QuizState.currentIndex];
-    if (!q) return;
+    const input = document.getElementById("questionNoteInput");
+    if (!q || !input) return;
 
-    QuizState.markedForReview[q.id] = !QuizState.markedForReview[q.id];
-    renderCurrentQuestion();
+    StorageEngine.saveNote(q.id, input.value);
+    showToast("Personal note saved for this question!", "success");
 }
 
 function toggleBookmarkCurrent() {
@@ -585,311 +506,734 @@ function toggleBookmarkCurrent() {
     if (!q) return;
 
     StorageEngine.toggleBookmark(q);
-    renderCurrentQuestion();
+    renderQuestion(QuizState.currentIndex);
 }
 
-function saveCurrentNote() {
+function toggleMarkForReview() {
     const q = QuizState.questions[QuizState.currentIndex];
     if (!q) return;
 
-    const noteInput = document.getElementById("questionNoteInput");
-    if (noteInput) {
-        StorageEngine.saveNote(q.id, noteInput.value);
-        showToast("Personal note saved!", "success");
-    }
-}
-
-/**
- * Question Palette Navigation (4 States: Current, Answered, Unanswered, Marked)
- */
-function renderQuestionPalette() {
-    const palette = document.getElementById("questionPalette");
-    if (!palette) return;
-
-    palette.innerHTML = "";
-
-    QuizState.questions.forEach((q, index) => {
-        const btn = document.createElement("button");
-        btn.type = "button";
-
-        const isCurrent = index === QuizState.currentIndex;
-        const isAnswered = QuizState.userAnswers.hasOwnProperty(q.id);
-        const isMarked = QuizState.markedForReview[q.id];
-
-        let className = "palette-btn";
-        if (isCurrent) className += " current";
-        else if (isMarked) className += " marked";
-        else if (isAnswered) className += " answered";
-        else className += " unanswered";
-
-        btn.className = className;
-        btn.textContent = index + 1;
-        btn.onclick = () => jumpToQuestion(index);
-
-        palette.appendChild(btn);
-    });
-}
-
-function jumpToQuestion(index) {
-    QuizState.currentIndex = index;
-    renderCurrentQuestion();
-}
-
-function nextQuestion() {
-    if (QuizState.currentIndex < QuizState.questions.length - 1) {
-        QuizState.currentIndex++;
-        renderCurrentQuestion();
-    }
+    QuizState.markedForReview[q.id] = !QuizState.markedForReview[q.id];
+    renderQuestion(QuizState.currentIndex);
 }
 
 function prevQuestion() {
     if (QuizState.currentIndex > 0) {
-        QuizState.currentIndex--;
-        renderCurrentQuestion();
+        renderQuestion(QuizState.currentIndex - 1);
+    }
+}
+
+function nextQuestion() {
+    if (QuizState.currentIndex < QuizState.questionLimit - 1) {
+        renderQuestion(QuizState.currentIndex + 1);
     }
 }
 
 /**
- * Submit Quiz & Analytics Execution
+ * Question Palette Side Grid
+ */
+function renderQuestionPalette() {
+    const paletteGrid = document.getElementById("questionPalette");
+    if (!paletteGrid) return;
+
+    paletteGrid.innerHTML = "";
+    let answered = 0;
+    let marked = 0;
+
+    QuizState.questions.forEach((q, idx) => {
+        const item = document.createElement("div");
+        item.className = "palette-item";
+        item.textContent = idx + 1;
+
+        const isCurrent = idx === QuizState.currentIndex;
+        const isAns = QuizState.userAnswers[q.id] !== undefined;
+        const isMrk = QuizState.markedForReview[q.id];
+
+        if (isAns) answered++;
+        if (isMrk) marked++;
+
+        if (isCurrent) item.classList.add("current");
+        else if (isAns) item.classList.add("answered");
+        else if (isMrk) item.classList.add("marked");
+        else item.classList.add("unanswered");
+
+        item.addEventListener("click", () => renderQuestion(idx));
+        paletteGrid.appendChild(item);
+    });
+
+    const sideAns = document.getElementById("sideAnsweredCount");
+    const sideUnans = document.getElementById("sideUnansweredCount");
+    const sideMrk = document.getElementById("sideMarkedCount");
+
+    if (sideAns) sideAns.textContent = answered;
+    if (sideUnans) sideUnans.textContent = QuizState.questionLimit - answered;
+    if (sideMrk) sideMrk.textContent = marked;
+}
+
+/**
+ * Learning Mode Instant Feedback Renderer
+ */
+function renderLearningFeedback(q, container) {
+    container.style.display = "block";
+    const userAns = QuizState.userAnswers[q.id];
+    const isCorrect = userAns === q.correct;
+
+    container.innerHTML = `
+        <div style="padding: 1rem; border-radius: 8px; background: ${isCorrect ? 'var(--success-light)' : 'var(--danger-light)'}; border: 1px solid ${isCorrect ? 'var(--success-color)' : 'var(--danger-color)'};">
+            <h4 style="color: ${isCorrect ? 'var(--success-color)' : 'var(--danger-color)'}; margin-bottom: 0.5rem;">
+                ${isCorrect ? '✅ Correct Answer!' : '❌ Incorrect Answer'}
+            </h4>
+            <p style="font-size: 0.9rem; color: var(--text-primary); margin-bottom: 0.5rem;">
+                <strong>Explanation:</strong> ${q.explanation}
+            </p>
+            <div style="font-size: 0.85rem; color: var(--text-secondary);">
+                💡 <strong>Quick Tip:</strong> ${q.quickTip || ''}
+            </div>
+        </div>
+    `;
+}
+
+/**
+ * Timer Handler
+ */
+function handleTimerTick() {
+    if (QuizState.remainingSeconds === null) return;
+
+    QuizState.remainingSeconds--;
+    updateTimerDisplay();
+
+    if (QuizState.remainingSeconds <= 0) {
+        clearInterval(QuizState.timerInterval);
+        showToast("⏰ Time is up! Submitting quiz...", "warning");
+        submitQuiz();
+    }
+}
+
+function updateTimerDisplay() {
+    const timerBadge = document.getElementById("dashTimerBadge");
+    if (!timerBadge || QuizState.remainingSeconds === null) return;
+
+    const mins = Math.floor(QuizState.remainingSeconds / 60);
+    const secs = QuizState.remainingSeconds % 60;
+    const formatted = `⏱️ ${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    timerBadge.textContent = formatted;
+
+    if (QuizState.remainingSeconds < 60) {
+        timerBadge.style.color = "var(--danger-color)";
+    }
+}
+
+/**
+ * Submit Quiz & Performance Evaluation
  */
 function submitQuiz() {
-    if (QuizState.isSubmitted) return;
+    recordTimeForCurrentQuestion();
+    if (QuizState.timerInterval) clearInterval(QuizState.timerInterval);
+
     QuizState.isSubmitted = true;
-    clearInterval(QuizState.timerInterval);
 
-    const endTime = new Date();
-    const timeTakenSeconds = Math.round((endTime - QuizState.startTime) / 1000);
+    // Calculate Metrics
+    let correctCount = 0;
+    let wrongCount = 0;
+    let unansweredCount = 0;
 
-    let correctAnswers = 0;
-    let wrongAnswers = 0;
-    let unanswered = 0;
-    const totalQuestions = QuizState.questions.length;
+    // Confidence metrics
+    let confCorrect = 0;
+    let confWrong = 0;
+    let unsureCorrect = 0;
+    let unsureWrong = 0;
 
     QuizState.questions.forEach(q => {
-        const choice = QuizState.userAnswers[q.id];
-        if (choice === undefined) {
-            unanswered++;
-        } else if (choice === q.correct) {
-            correctAnswers++;
+        const userAns = QuizState.userAnswers[q.id];
+        const conf = QuizState.userConfidence[q.id] || "Somewhat Sure";
+
+        if (userAns === undefined) {
+            unansweredCount++;
+        } else if (userAns === q.correct) {
+            correctCount++;
+            if (conf === "Very Sure" || conf === "Somewhat Sure") confCorrect++;
+            else unsureCorrect++;
         } else {
-            wrongAnswers++;
+            wrongCount++;
+            // Save to Mistakes Notebook automatically
+            StorageEngine.saveMistake(q, userAns);
+
+            if (conf === "Very Sure") confWrong++;
+            else unsureWrong++;
         }
     });
 
-    const score = correctAnswers;
-    const percentage = parseFloat(((correctAnswers / totalQuestions) * 100).toFixed(1));
-    const accuracy = parseFloat(((correctAnswers / (correctAnswers + wrongAnswers || 1)) * 100).toFixed(1));
+    const totalQ = QuizState.questionLimit;
+    const scorePct = Math.round((correctCount / totalQ) * 100);
+    const timeSpentSec = Math.round((Date.now() - QuizState.startTime) / 1000);
+    const minsSpent = Math.floor(timeSpentSec / 60);
+    const secsSpent = timeSpentSec % 60;
+    const timeFormatted = `${minsSpent}m ${secsSpent}s`;
 
-    // Calculate XP Gained
-    let xpGained = score * 10 + 25; // 10 per correct + 25 completion
-    if (percentage >= 100) xpGained += 100;
-    if (QuizState.isDailyChallenge) xpGained += 50;
+    // Category Previous Score Comparison ("Beat Your Previous Score")
+    const prevCategoryScore = StorageEngine.saveCategoryScore(QuizState.categoryName, correctCount, totalQ);
 
-    let feedback = "";
-    let badgeClass = "badge-success";
-    if (percentage >= 90) {
-        feedback = "🌟 Outstanding Performance! Exceptional Mastery!";
-        badgeClass = "badge-success";
-    } else if (percentage >= 70) {
-        feedback = "👍 Great Job! Strong technical foundation!";
-        badgeClass = "badge-info";
-    } else if (percentage >= 50) {
-        feedback = "📚 Good Effort! Keep practicing to improve accuracy.";
-        badgeClass = "badge-warning";
-    } else {
-        feedback = "💪 Keep Practicing! Review key concepts and retry.";
-        badgeClass = "badge-danger";
-    }
+    // Save Attempt to History
+    const attemptData = {
+        id: `att_${Date.now()}`,
+        date: new Date().toLocaleDateString(),
+        playerName: QuizState.playerName,
+        category: QuizState.categoryName,
+        difficulty: QuizState.difficulty,
+        score: correctCount,
+        totalQuestions: totalQ,
+        percentage: scorePct,
+        correctAnswers: correctCount,
+        wrongAnswers: wrongCount,
+        unanswered: unansweredCount,
+        timeTakenSeconds: timeSpentSec,
+        timeFormatted: timeFormatted,
+        userAnswers: QuizState.userAnswers,
+        userConfidence: QuizState.userConfidence,
+        perQuestionTime: QuizState.perQuestionTime
+    };
 
-    const mins = Math.floor(timeTakenSeconds / 60);
-    const secs = timeTakenSeconds % 60;
-    const timeTakenStr = `${mins}m ${secs}s`;
+    StorageEngine.saveQuizAttempt(attemptData);
 
-    if (QuizState.isDailyChallenge) {
-        StorageEngine.saveDailyChallengeResult(score, totalQuestions);
-    } else {
-        const attemptData = {
-            id: Date.now(),
-            playerName: QuizState.playerName,
-            category: QuizState.categoryName,
-            difficulty: QuizState.difficulty,
-            score: score,
-            totalQuestions: totalQuestions,
-            correctAnswers: correctAnswers,
-            wrongAnswers: wrongAnswers,
-            unanswered: unanswered,
-            percentage: percentage,
-            accuracy: accuracy,
-            timeTaken: timeTakenStr,
-            timeTakenSeconds: timeTakenSeconds,
-            date: new Date().toLocaleDateString(),
-            questions: QuizState.questions,
-            userAnswers: QuizState.userAnswers
-        };
-        StorageEngine.saveQuizAttempt(attemptData);
-    }
-
-    // Populate Results UI
-    document.getElementById("resPlayerName").textContent = QuizState.playerName;
-    document.getElementById("resCategory").textContent = QuizState.categoryName;
-    document.getElementById("resDifficulty").textContent = QuizState.difficulty;
-    document.getElementById("resFeedback").textContent = feedback;
-    document.getElementById("resFeedbackBadge").className = `badge ${badgeClass}`;
-
-    document.getElementById("resTotal").textContent = totalQuestions;
-    document.getElementById("resCorrect").textContent = correctAnswers;
-    document.getElementById("resWrong").textContent = wrongAnswers;
-    document.getElementById("resUnanswered").textContent = unanswered;
-    document.getElementById("resScore").textContent = `${score} / ${totalQuestions}`;
-    document.getElementById("resPercentage").textContent = `${percentage}%`;
-    document.getElementById("resAccuracy").textContent = `${accuracy}%`;
-    document.getElementById("resTimeTaken").textContent = timeTakenStr;
-    document.getElementById("resXPGained").textContent = `+${xpGained} XP`;
-    document.getElementById("resCircleProgress").style.strokeDashoffset = `${440 - (440 * percentage) / 100}`;
+    // Render Result Dashboard Screen
+    renderResultDashboard(attemptData, prevCategoryScore, {
+        confCorrect,
+        confWrong,
+        unsureCorrect,
+        unsureWrong
+    });
 
     showSection("resultSection");
-    renderUserDashboard();
-    renderLeaderboard();
-    renderHistory();
-    renderAchievements();
 }
 
 /**
- * Render Complete Answer Key & Step-by-Step Explanations
+ * Render Advanced Result Dashboard Screen
  */
-function reviewAnswers() {
-    const container = document.getElementById("reviewQuestionsList");
+function renderResultDashboard(attempt, prevScore, confStats) {
+    const resPlayer = document.getElementById("resPlayerName");
+    const resCat = document.getElementById("resCategory");
+    const resDiff = document.getElementById("resDifficulty");
+    const resPct = document.getElementById("resPercentage");
+    const resCircle = document.getElementById("resCircleProgress");
+
+    if (resPlayer) resPlayer.textContent = attempt.playerName;
+    if (resCat) resCat.textContent = attempt.category;
+    if (resDiff) resDiff.textContent = attempt.difficulty;
+    if (resPct) resPct.textContent = `${attempt.percentage}%`;
+
+    if (resCircle) {
+        const circumference = 2 * Math.PI * 70;
+        const offset = circumference - (attempt.percentage / 100) * circumference;
+        resCircle.style.strokeDashoffset = offset;
+    }
+
+    // Feedback message
+    const resFB = document.getElementById("resFeedback");
+    if (resFB) {
+        if (attempt.percentage >= 90) resFB.textContent = "🏆 Outstanding Performance! Master Level Accuracy!";
+        else if (attempt.percentage >= 70) resFB.textContent = "🎉 Great Job! Solid concept understanding!";
+        else if (attempt.percentage >= 50) resFB.textContent = "👍 Good Effort! Review recommended videos to boost accuracy.";
+        else resFB.textContent = "📖 Needs Practice! Focus on weak concepts in the mistake notebook.";
+    }
+
+    // Detailed metrics
+    document.getElementById("resTotal").textContent = attempt.totalQuestions;
+    document.getElementById("resCorrect").textContent = attempt.correctAnswers;
+    document.getElementById("resWrong").textContent = attempt.wrongAnswers;
+    document.getElementById("resUnanswered").textContent = attempt.unanswered;
+    document.getElementById("resScore").textContent = `${attempt.score} / ${attempt.totalQuestions}`;
+    document.getElementById("resAccuracy").textContent = `${attempt.percentage}%`;
+    document.getElementById("resTimeTaken").textContent = attempt.timeFormatted;
+    document.getElementById("resXPGained").textContent = `+${attempt.score * 10 + 25} XP`;
+
+    // Beat Your Previous Score Banner
+    const beatCard = document.getElementById("beatPreviousScoreCard");
+    const beatMsg = document.getElementById("beatScoreMessage");
+    const beatPrev = document.getElementById("beatPrevVal");
+    const beatCurr = document.getElementById("beatCurrVal");
+    const beatDiff = document.getElementById("beatDiffVal");
+
+    if (beatCard && prevScore) {
+        beatCard.style.display = "block";
+        beatPrev.textContent = `${prevScore.score}/${prevScore.total}`;
+        beatCurr.textContent = `${attempt.score}/${attempt.totalQuestions}`;
+        
+        const diff = attempt.score - prevScore.score;
+        if (diff > 0) {
+            beatMsg.textContent = `Great! You improved from ${prevScore.score} to ${attempt.score}.`;
+            beatDiff.textContent = `+${diff}`;
+            beatDiff.style.color = "var(--success-color)";
+        } else if (diff < 0) {
+            beatMsg.textContent = `Keep practicing. Your previous score was ${prevScore.score}.`;
+            beatDiff.textContent = `${diff}`;
+            beatDiff.style.color = "var(--warning-color)";
+        } else {
+            beatMsg.textContent = `You maintained your previous score of ${prevScore.score}!`;
+            beatDiff.textContent = `0`;
+            beatDiff.style.color = "var(--accent-blue)";
+        }
+    } else if (beatCard) {
+        beatCard.style.display = "none";
+    }
+
+    // Confidence Breakdown Summary
+    document.getElementById("confCorrectVal").textContent = confStats.confCorrect;
+    document.getElementById("confWrongVal").textContent = confStats.confWrong;
+    document.getElementById("unsureCorrectVal").textContent = confStats.unsureCorrect;
+    document.getElementById("unsureWrongVal").textContent = confStats.unsureWrong;
+
+    const highConfAlert = document.getElementById("highConfWrongAlert");
+    if (highConfAlert) {
+        highConfAlert.style.display = confStats.confWrong > 0 ? "block" : "none";
+    }
+
+    // Time Analysis Summary
+    const timeTotalSec = attempt.timeTakenSeconds;
+    const avgSec = Math.round(timeTotalSec / attempt.totalQuestions);
+    document.getElementById("timeTotalVal").textContent = `${timeTotalSec}s`;
+    document.getElementById("timeAvgVal").textContent = `${avgSec}s`;
+
+    let fastestQ = null;
+    let slowestQ = null;
+    let minT = Infinity;
+    let maxT = -1;
+
+    QuizState.questions.forEach((q, idx) => {
+        const t = QuizState.perQuestionTime[q.id] || 5;
+        if (t < minT) { minT = t; fastestQ = `Q${idx + 1} (${t}s)`; }
+        if (t > maxT) { maxT = t; slowestQ = `Q${idx + 1} (${t}s)`; }
+    });
+
+    document.getElementById("timeFastestVal").textContent = fastestQ || "Q1 (0s)";
+    document.getElementById("timeSlowestVal").textContent = slowestQ || "Q1 (0s)";
+
+    const slowAlert = document.getElementById("slowQuestionAlert");
+    if (slowAlert) {
+        slowAlert.style.display = maxT > avgSec * 1.8 ? "block" : "none";
+    }
+
+    // Render Weakness Heatmap & Video Recommendations
+    renderResultHeatmap();
+    renderResultVideoRecommendations();
+}
+
+/**
+ * Render Heatmap in Result & Dashboard
+ */
+function renderResultHeatmap() {
+    const container = document.getElementById("resultHeatmapContainer");
+    if (!container) return;
+
+    const analysis = StorageEngine.getWeakSubjectsAnalysis();
+    container.innerHTML = "";
+
+    Object.keys(analysis.catStats).forEach(cat => {
+        const stat = analysis.catStats[cat];
+        let statusClass = "status-average";
+        let statusText = "Average 🟡";
+
+        if (stat.total > 0) {
+            if (stat.percentage >= 75) { statusClass = "status-strong"; statusText = "Strong 🟢"; }
+            else if (stat.percentage < 50) { statusClass = "status-weak"; statusText = "Weak 🔴"; }
+        } else {
+            statusText = "Not Attempted ⚪";
+        }
+
+        const row = document.createElement("div");
+        row.className = "heatmap-row";
+        row.innerHTML = `
+            <div class="heatmap-label-bar">
+                <span>${cat}</span>
+                <span>${stat.percentage}% (${statusText})</span>
+            </div>
+            <div class="heatmap-bar-wrap">
+                <div class="heatmap-bar-fill ${statusClass}" style="width: ${stat.percentage}%;"></div>
+            </div>
+        `;
+        container.appendChild(row);
+    });
+}
+
+/**
+ * Render Video Recommendations Grid in Result & Dashboard
+ */
+function renderResultVideoRecommendations() {
+    const grid = document.getElementById("resultVideoRecGrid");
+    if (!grid) return;
+
+    const analysis = StorageEngine.getWeakSubjectsAnalysis();
+    grid.innerHTML = "";
+
+    const categoriesToRecommend = analysis.weak.length > 0 
+        ? analysis.weak.map(w => w.category) 
+        : [QuizState.categoryName];
+
+    categoriesToRecommend.forEach(cat => {
+        const rec = RECOMMENDED_LEARNING[cat];
+        if (rec) {
+            const card = document.createElement("div");
+            card.className = "video-rec-card";
+            card.innerHTML = `
+                <div>
+                    <span class="badge badge-warning" style="margin-bottom: 0.5rem;">${cat} — Recommended</span>
+                    <h4 style="color: var(--text-primary); margin-bottom: 0.5rem;">${rec.topics[0]}</h4>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">${rec.description}</p>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button type="button" class="btn btn-primary" style="flex: 1; padding: 8px;" onclick="openVideoModal('${cat}', '${rec.topics[0]}')">▶️ Watch Video</button>
+                    <button type="button" class="btn btn-outline" style="padding: 8px;" onclick="startWeakPractice()">🎯 Practice</button>
+                </div>
+            `;
+            grid.appendChild(card);
+        }
+    });
+}
+
+/**
+ * User Dashboard Section Renderer
+ */
+function renderUserDashboard() {
+    const stats = StorageEngine.getUserDashboardStats();
+    const analysis = StorageEngine.getWeakSubjectsAnalysis();
+
+    // Headers & Metrics
+    const welcome = document.getElementById("userWelcomeHeader");
+    const streak = document.getElementById("dashStreakText");
+    const xpText = document.getElementById("dashXPText");
+    const lvlTitle = document.getElementById("dashLevelTitle");
+    const xpBar = document.getElementById("dashXPBarFill");
+
+    if (welcome) welcome.textContent = `Welcome back, ${stats.playerName}`;
+    if (streak) streak.textContent = `🔥 ${stats.streak.currentStreak} Day Streak`;
+    if (xpText) xpText.textContent = `${stats.currentXP} XP`;
+    if (lvlTitle) lvlTitle.textContent = `Level ${stats.currentLevel.level} — ${stats.currentLevel.title}`;
+
+    if (xpBar) {
+        const currMin = stats.currentLevel.minXP;
+        const currMax = stats.currentLevel.maxXP;
+        const pct = Math.min(100, Math.round(((stats.currentXP - currMin) / (currMax - currMin)) * 100));
+        xpBar.style.width = `${pct}%`;
+    }
+
+    // Grid Values
+    document.getElementById("userDashCompleted").textContent = stats.quizzesCompleted;
+    document.getElementById("userDashBest").textContent = stats.bestScore;
+    document.getElementById("userDashAvg").textContent = `${stats.avgPercentage}%`;
+    document.getElementById("userDashAttempted").textContent = stats.totalAttempted;
+    document.getElementById("userDashMistakes").textContent = stats.totalMistakes;
+    document.getElementById("userDashAccuracy").textContent = `${stats.accuracy}%`;
+
+    // Smart Weak Area Banner
+    const weakTitle = document.getElementById("weakSubjectTitle");
+    if (weakTitle) {
+        if (analysis.primaryWeak) {
+            weakTitle.textContent = `Your Weak Area: ${analysis.primaryWeak.category} needs more practice (${analysis.primaryWeak.percentage}% accuracy).`;
+        } else {
+            weakTitle.textContent = "Keep taking quizzes to analyze your category performance!";
+        }
+    }
+
+    // Dashboard Heatmap
+    const dbHeatmap = document.getElementById("dashboardHeatmapContainer");
+    if (dbHeatmap) {
+        dbHeatmap.innerHTML = "";
+        Object.keys(analysis.catStats).forEach(cat => {
+            const stat = analysis.catStats[cat];
+            let statusClass = "status-average";
+            let statusText = "Average 🟡";
+
+            if (stat.total > 0) {
+                if (stat.percentage >= 75) { statusClass = "status-strong"; statusText = "Strong 🟢"; }
+                else if (stat.percentage < 50) { statusClass = "status-weak"; statusText = "Weak 🔴"; }
+            } else {
+                statusText = "Not Attempted ⚪";
+            }
+
+            const row = document.createElement("div");
+            row.className = "heatmap-row";
+            row.innerHTML = `
+                <div class="heatmap-label-bar">
+                    <span>${cat}</span>
+                    <span>${stat.percentage}% (${statusText})</span>
+                </div>
+                <div class="heatmap-bar-wrap">
+                    <div class="heatmap-bar-fill ${statusClass}" style="width: ${stat.percentage}%;"></div>
+                </div>
+            `;
+            dbHeatmap.appendChild(row);
+        });
+    }
+
+    // Dashboard Video Recommendations Grid
+    const dashVidGrid = document.getElementById("dashVideoRecGrid");
+    if (dashVidGrid) {
+        dashVidGrid.innerHTML = "";
+        const categoriesToRecommend = analysis.weak.length > 0 
+            ? analysis.weak.map(w => w.category) 
+            : ["DBMS", "OOP", "SQL", "Java"];
+
+        categoriesToRecommend.forEach(cat => {
+            const rec = RECOMMENDED_LEARNING[cat];
+            if (rec) {
+                const card = document.createElement("div");
+                card.className = "video-rec-card";
+                card.innerHTML = `
+                    <div>
+                        <span class="badge badge-warning" style="margin-bottom: 0.5rem;">${cat} — Recommended</span>
+                        <h4 style="color: var(--text-primary); margin-bottom: 0.5rem;">${rec.topics[0]}</h4>
+                        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">${rec.description}</p>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button type="button" class="btn btn-primary" style="flex: 1; padding: 8px;" onclick="openVideoModal('${cat}', '${rec.topics[0]}')">▶️ Watch Video</button>
+                        <button type="button" class="btn btn-outline" style="padding: 8px;" onclick="startWeakPractice()">🎯 Practice</button>
+                    </div>
+                `;
+                dashVidGrid.appendChild(card);
+            }
+        });
+    }
+}
+
+/**
+ * Technical Placement Interview Preparation Mode Handler
+ */
+function renderInterviewMode(selectedCategory = "all") {
+    const container = document.getElementById("interviewCardsContainer");
     if (!container) return;
 
     container.innerHTML = "";
 
-    QuizState.questions.forEach((q, index) => {
-        const userChoice = QuizState.userAnswers[q.id];
-        const isCorrect = userChoice === q.correct;
-        const isUnanswered = userChoice === undefined;
+    // Build list of interview questions across database
+    let interviewList = [];
+    Object.keys(QUESTION_DATABASE).forEach(cat => {
+        QUESTION_DATABASE[cat].forEach(q => {
+            if (selectedCategory === "all" || q.category === selectedCategory) {
+                interviewList.push(q);
+            }
+        });
+    });
 
+    if (interviewList.length === 0) {
+        container.innerHTML = `<p style="color: var(--text-secondary); text-align: center;">No interview questions available for this category.</p>`;
+        return;
+    }
+
+    interviewList.forEach(q => {
         const card = document.createElement("div");
-        card.className = `review-card ${isCorrect ? 'correct' : isUnanswered ? 'unanswered' : 'wrong'}`;
-
-        let statusBadge = '';
-        if (isCorrect) statusBadge = '<span class="badge badge-success">✓ Correct</span>';
-        else if (isUnanswered) statusBadge = '<span class="badge badge-warning">⚠️ Unanswered</span>';
-        else statusBadge = '<span class="badge badge-danger">✕ Incorrect</span>';
-
-        const userChoiceText = userChoice !== undefined ? `${String.fromCharCode(65 + userChoice)}) ${q.options[userChoice]}` : "None (Unanswered)";
-        const correctChoiceText = `${String.fromCharCode(65 + q.correct)}) ${q.options[q.correct]}`;
-
+        card.className = "interview-card";
         card.innerHTML = `
-            <div class="review-header">
-                <span class="question-number">Question ${index + 1} of ${QuizState.questions.length}</span>
-                ${statusBadge}
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 8px;">
+                <span class="badge badge-info">${q.category} • ${q.topic}</span>
+                <span class="badge badge-warning">${q.difficulty}</span>
             </div>
+            
+            <h3 style="font-size: 1.25rem; color: var(--text-primary); margin-bottom: 1.25rem;">
+                ${q.question}
+            </h3>
 
-            <h4 class="review-q-title">${q.question}</h4>
-
-            <div class="user-vs-correct-grid">
-                <div class="ans-box ${isCorrect ? 'user-correct' : 'user-wrong'}">
-                    <span class="ans-label">❌ Your Selection:</span>
-                    <strong>${userChoiceText}</strong>
-                </div>
-                <div class="ans-box correct">
-                    <span class="ans-label">✅ Correct Answer:</span>
-                    <strong>${correctChoiceText}</strong>
-                </div>
-            </div>
-
-            <div class="explanation-details-box">
-                <div class="exp-block">
-                    <span class="exp-badge">🧠 WHY?</span>
-                    <p>${q.explanation}</p>
-                </div>
-                ${q.solution && q.solution.length > 0 ? `
-                    <div class="exp-block">
-                        <span class="exp-badge">⚙️ HOW TO SOLVE (Step-by-Step):</span>
-                        <ul class="solution-steps-list">
-                            ${q.solution.map(s => `<li>${s}</li>`).join('')}
-                        </ul>
+            <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 1.5rem;">
+                ${q.options.map((opt, idx) => `
+                    <div class="option-card ${idx === q.correct ? 'correct' : ''}" style="padding: 10px 14px; font-size: 0.9rem;">
+                        <span class="option-prefix">${String.fromCharCode(65 + idx)}</span>
+                        <span>${opt} ${idx === q.correct ? '✅ (Correct Answer)' : ''}</span>
                     </div>
-                ` : ''}
-                <div class="exp-block">
-                    <span class="exp-badge">📚 CONCEPT TO REMEMBER:</span>
-                    <p><strong>${q.concept}</strong></p>
+                `).join('')}
+            </div>
+
+            <div style="background: var(--bg-secondary); border-radius: 12px; padding: 1.25rem; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 1rem;">
+                <div>
+                    <strong style="color: var(--accent-blue);">📖 Detailed Explanation:</strong>
+                    <p style="font-size: 0.95rem; color: var(--text-primary); margin-top: 4px;">${q.explanation}</p>
                 </div>
-                ${q.quickTip ? `<div class="exp-block"><span class="exp-badge">💡 QUICK TIP:</span><p>${q.quickTip}</p></div>` : ''}
+
+                <div>
+                    <strong style="color: var(--warning-color);">🎯 What the Interviewer is Testing:</strong>
+                    <p style="font-size: 0.95rem; color: var(--text-primary); margin-top: 4px;">${q.interviewTesting || 'Tests core conceptual depth and implementation knowledge.'}</p>
+                </div>
+
+                <div>
+                    <strong style="color: var(--danger-color);">⚠️ Common Candidate Pitfall:</strong>
+                    <p style="font-size: 0.95rem; color: var(--text-primary); margin-top: 4px;">${q.commonMistake}</p>
+                </div>
+
+                <div>
+                    <strong style="color: var(--success-color);">💬 Possible Follow-up Question:</strong>
+                    <p style="font-size: 0.95rem; color: var(--text-primary); margin-top: 4px;">"${q.interviewFollowUp || 'How would you optimize this for high-scale concurrent execution?'}"</p>
+                </div>
+
+                <div>
+                    <strong style="color: var(--accent-blue);">💡 Quick Interview Tip:</strong>
+                    <p style="font-size: 0.95rem; color: var(--text-primary); margin-top: 4px;">${q.quickTip}</p>
+                </div>
+            </div>
+
+            <div style="margin-top: 1.25rem; text-align: right;">
+                <button type="button" class="btn btn-primary" onclick="openVideoModal('${q.category}', '${q.topic}')">▶️ Watch Learning Video</button>
             </div>
         `;
-
         container.appendChild(card);
+    });
+}
+
+function filterInterviewCat(catName, btnEl) {
+    document.querySelectorAll("#interviewCatTabs .tab-btn").forEach(b => b.classList.remove("active"));
+    if (btnEl) btnEl.classList.add("active");
+    renderInterviewMode(catName);
+}
+
+/**
+ * Saved Mistakes Notebook ("My Mistakes") Renderer
+ */
+function renderMistakesNotebook() {
+    const container = document.getElementById("mistakesListContainer");
+    const badge = document.getElementById("mistakesCountBadge");
+    if (!container) return;
+
+    const mistakes = StorageEngine.getMistakes();
+    if (badge) badge.textContent = `${mistakes.length} Saved Mistakes`;
+
+    if (mistakes.length === 0) {
+        container.innerHTML = `
+            <div style="text-align: center; padding: 3rem; color: var(--text-secondary);">
+                <h3>🎉 Your Mistakes Notebook is empty!</h3>
+                <p>When you answer a question wrong in any quiz mode, it will automatically show up here for revision.</p>
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = "";
+
+    mistakes.forEach(m => {
+        const q = m.questionObj;
+        const userOptText = q.options[m.userAnswer] || "Unanswered";
+        const correctOptText = q.options[q.correct];
+
+        const card = document.createElement("div");
+        card.className = "mistake-card";
+        card.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 8px;">
+                <span class="badge badge-warning">${q.category} • ${q.topic || 'Core Concept'}</span>
+                <span style="font-size: 0.85rem; color: var(--text-secondary);">Saved: ${m.date}</span>
+            </div>
+
+            <h3 style="font-size: 1.15rem; color: var(--text-primary); margin-bottom: 1rem;">${q.question}</h3>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                <div style="padding: 10px 14px; background: rgba(239, 68, 68, 0.15); border: 1px solid var(--danger-color); border-radius: 8px;">
+                    <strong style="color: var(--danger-color);">❌ Your Answer:</strong>
+                    <div style="color: var(--text-primary); font-weight: 600; margin-top: 4px;">${userOptText}</div>
+                </div>
+                <div style="padding: 10px 14px; background: rgba(16, 185, 129, 0.15); border: 1px solid var(--success-color); border-radius: 8px;">
+                    <strong style="color: var(--success-color);">✅ Correct Answer:</strong>
+                    <div style="color: var(--text-primary); font-weight: 600; margin-top: 4px;">${correctOptText}</div>
+                </div>
+            </div>
+
+            <div style="background: var(--bg-secondary); border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
+                <p style="font-size: 0.95rem; color: var(--text-primary); margin-bottom: 0.5rem;"><strong>📖 Why is this correct?</strong> ${q.explanation}</p>
+                <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.5rem;"><strong>🧠 Concept:</strong> ${q.concept || ''}</p>
+                <p style="font-size: 0.9rem; color: var(--danger-color);"><strong>⚠️ Common Mistake:</strong> ${q.commonMistake || ''}</p>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <button type="button" class="btn btn-primary" onclick="openVideoModal('${q.category}', '${q.topic || 'Basics'}')">▶️ Watch Video</button>
+                <div style="display: flex; gap: 8px;">
+                    <button type="button" class="btn btn-secondary" onclick="openPracticeModal('${q.id}')">🎯 Practice Question</button>
+                    <button type="button" class="btn btn-outline" onclick="removeSingleMistake('${q.id}')">🗑️ Remove</button>
+                </div>
+            </div>
+        `;
+        container.appendChild(card);
+    });
+}
+
+function removeSingleMistake(qId) {
+    StorageEngine.removeMistake(qId);
+    showToast("Mistake removed from notebook!", "info");
+    renderMistakesNotebook();
+}
+
+function clearMistakesNotebook() {
+    StorageEngine.clearMistakes();
+    showToast("Mistakes notebook cleared!", "info");
+    renderMistakesNotebook();
+}
+
+/**
+ * Complete Answer Review Handler
+ */
+function reviewAnswers() {
+    const list = document.getElementById("reviewQuestionsList");
+    if (!list) return;
+
+    list.innerHTML = "";
+
+    QuizState.questions.forEach((q, idx) => {
+        const userAns = QuizState.userAnswers[q.id];
+        const isCorrect = userAns === q.correct;
+        const isUnans = userAns === undefined;
+        const conf = QuizState.userConfidence[q.id] || "Somewhat Sure";
+
+        let statusBadge = `<span class="badge badge-success">✅ Correct</span>`;
+        if (isUnans) statusBadge = `<span class="badge badge-warning">⚪ Unanswered</span>`;
+        else if (!isCorrect) statusBadge = `<span class="badge badge-danger">❌ Wrong</span>`;
+
+        const confBadge = `<span class="badge badge-info">Confidence: ${conf}</span>`;
+
+        const card = document.createElement("div");
+        card.className = "category-card";
+        card.style.marginBottom = "1.5rem";
+        card.style.textAlign = "left";
+
+        card.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 8px;">
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <span class="badge badge-info">Q${idx + 1}</span>
+                    ${statusBadge}
+                    ${confBadge}
+                </div>
+                ${q.isTricky ? '<span class="badge badge-warning">⚠️ Tricky Question</span>' : ''}
+            </div>
+
+            <h3 style="font-size: 1.15rem; color: var(--text-primary); margin-bottom: 1rem;">${q.question}</h3>
+
+            <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 1.25rem;">
+                ${q.options.map((opt, oIdx) => {
+                    let optStyle = "padding: 10px 14px; font-size: 0.9rem;";
+                    if (oIdx === q.correct) optStyle += " background: var(--success-light); border-color: var(--success-color);";
+                    else if (oIdx === userAns && !isCorrect) optStyle += " background: var(--danger-light); border-color: var(--danger-color);";
+
+                    return `
+                        <div class="option-card" style="${optStyle}">
+                            <span class="option-prefix">${String.fromCharCode(65 + oIdx)}</span>
+                            <span>${opt} ${oIdx === q.correct ? '✅ (Correct Answer)' : ''} ${oIdx === userAns && !isCorrect ? '❌ (Your Answer)' : ''}</span>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+
+            <div style="background: var(--bg-secondary); border-radius: 8px; padding: 1.25rem; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 0.75rem;">
+                <div><strong style="color: var(--accent-blue);">📖 Why is this correct?</strong> <p style="margin-top: 2px;">${q.explanation}</p></div>
+                ${q.isTricky && q.trickyExplanation ? `<div><strong style="color: var(--warning-color);">⚠️ Why other options look correct & Common Pitfall:</strong> <p style="margin-top: 2px;">${q.trickyExplanation}</p></div>` : ''}
+                <div><strong style="color: var(--success-color);">🧠 Concept to Remember:</strong> <p style="margin-top: 2px;">${q.concept}</p></div>
+                <div><strong style="color: var(--danger-color);">⚠️ Common Mistake:</strong> <p style="margin-top: 2px;">${q.commonMistake}</p></div>
+                <div><strong style="color: var(--warning-color);">💡 Quick Tip:</strong> <p style="margin-top: 2px;">${q.quickTip}</p></div>
+            </div>
+
+            <div style="margin-top: 1.25rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                <button type="button" class="btn btn-primary" onclick="openVideoModal('${q.category}', '${q.topic}')">▶️ Watch Video</button>
+                <button type="button" class="btn btn-secondary" onclick="openPracticeModal('${q.id}')">🎯 Practice Similar Question</button>
+            </div>
+        `;
+        list.appendChild(card);
     });
 
     showSection("reviewSection");
 }
 
-/**
- * Render Dedicated Mistake Review (Wrong Answers Only)
- */
 function reviewWrongAnswersOnly() {
-    const container = document.getElementById("weakReviewList");
-    if (!container) return;
-
-    container.innerHTML = "";
-
-    const wrongQuestions = QuizState.questions.filter(q => {
-        const userChoice = QuizState.userAnswers[q.id];
-        return userChoice === undefined || userChoice !== q.correct;
-    });
-
-    if (wrongQuestions.length === 0) {
-        container.innerHTML = `
-            <div class="card" style="text-align: center; padding: 2.5rem;">
-                <h3>🎉 Perfect Score! No wrong answers to review.</h3>
-            </div>
-        `;
-    } else {
-        wrongQuestions.forEach((q, index) => {
-            const userChoice = QuizState.userAnswers[q.id];
-            const card = document.createElement("div");
-            card.className = "review-card wrong";
-
-            card.innerHTML = `
-                <div class="review-header">
-                    <span class="badge badge-danger">❌ Mistake Review #${index + 1}</span>
-                    <span class="badge badge-info">${q.category}</span>
-                </div>
-
-                <h4 class="review-q-title">${q.question}</h4>
-
-                <div class="user-vs-correct-grid">
-                    <div class="ans-box user-wrong">
-                        <span class="ans-label">Your Selection:</span>
-                        <strong>${userChoice !== undefined ? q.options[userChoice] : "Unanswered"}</strong>
-                    </div>
-                    <div class="ans-box correct">
-                        <span class="ans-label">Correct Answer:</span>
-                        <strong>${q.options[q.correct]}</strong>
-                    </div>
-                </div>
-
-                <div class="explanation-details-box">
-                    <div class="exp-block">
-                        <span class="exp-badge">💡 Hint Clue:</span>
-                        <p>${q.hint}</p>
-                    </div>
-                    <div class="exp-block">
-                        <span class="exp-badge">🧠 Why your answer was incorrect:</span>
-                        <p>${q.explanation}</p>
-                    </div>
-                    <div class="exp-block">
-                        <span class="exp-badge">📚 Core Concept:</span>
-                        <p>${q.concept}</p>
-                    </div>
-                </div>
-            `;
-            container.appendChild(card);
-        });
-    }
-
-    showSection("weakReviewSection");
+    reviewAnswers();
 }
 
 function backToResults() {
@@ -897,83 +1241,169 @@ function backToResults() {
 }
 
 /**
- * Render User Profile Dashboard & Topic Mastery Progress
+ * Video Player Modal Controls
  */
-function renderUserDashboard() {
-    const stats = StorageEngine.getUserDashboardStats();
-    
-    document.getElementById("userWelcomeHeader").textContent = `Welcome back, ${stats.playerName}`;
-    document.getElementById("userDashCompleted").textContent = stats.quizzesCompleted;
-    document.getElementById("userDashBest").textContent = stats.bestScore;
-    document.getElementById("userDashAvg").textContent = `${stats.avgPercentage}%`;
-    document.getElementById("userDashAttempted").textContent = stats.totalAttempted;
-    document.getElementById("userDashAccuracy").textContent = `${stats.accuracy}%`;
+function openVideoModal(category, topicName) {
+    const modal = document.getElementById("videoModal");
+    const title = document.getElementById("videoModalTitle");
+    const desc = document.getElementById("videoModalDesc");
+    const embedBox = document.getElementById("videoEmbedBox");
 
-    // XP & Level UI
-    document.getElementById("dashXPText").textContent = `${stats.currentXP} XP`;
-    document.getElementById("dashLevelTitle").textContent = `Level ${stats.currentLevel.level}: ${stats.currentLevel.title}`;
-    
-    const xpProgress = ((stats.currentXP - stats.currentLevel.minXP) / (stats.currentLevel.maxXP - stats.currentLevel.minXP)) * 100;
-    document.getElementById("dashXPBarFill").style.width = `${Math.min(100, Math.max(0, xpProgress))}%`;
-    document.getElementById("dashStreakText").textContent = `🔥 ${stats.streak.currentStreak} Day Streak`;
+    const rec = RECOMMENDED_LEARNING[category] || RECOMMENDED_LEARNING.Java;
 
-    // Render Topic Mastery Progress Bars
-    const mastery = StorageEngine.getTopicMastery();
-    const masteryContainer = document.getElementById("topicMasteryContainer");
+    if (title) title.textContent = `🎥 Learning Video: ${category} — ${topicName || rec.topics[0]}`;
+    if (desc) desc.textContent = rec.description;
 
-    if (masteryContainer) {
-        masteryContainer.innerHTML = "";
-        Object.keys(mastery).forEach(cat => {
-            const data = mastery[cat];
-            const bar = document.createElement("div");
-            bar.style.marginBottom = "1rem";
-            bar.innerHTML = `
-                <div style="display: flex; justify-content: space-between; font-size: 0.9rem; font-weight: 700; margin-bottom: 4px;">
-                    <span>${cat}</span>
-                    <span>${data.percentage}% Mastery</span>
-                </div>
-                <div class="progress-bar-wrap" style="height: 8px;">
-                    <div class="progress-bar-fill" style="width: ${data.percentage}%;"></div>
-                </div>
-            `;
-            masteryContainer.appendChild(bar);
-        });
+    if (embedBox) {
+        embedBox.innerHTML = `
+            <iframe src="${rec.embedUrl}?autoplay=1" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        `;
     }
+
+    if (modal) modal.style.display = "flex";
+}
+
+function closeVideoModal() {
+    const modal = document.getElementById("videoModal");
+    const embedBox = document.getElementById("videoEmbedBox");
+    if (embedBox) embedBox.innerHTML = "";
+    if (modal) modal.style.display = "none";
 }
 
 /**
- * Render Daily Challenge Card
+ * Practice Similar / Retry Modal Controls
+ */
+function openPracticeModal(questionId) {
+    const modal = document.getElementById("practiceModal");
+    const content = document.getElementById("practiceModalContent");
+    if (!modal || !content) return;
+
+    let targetQ = null;
+    Object.keys(QUESTION_DATABASE).forEach(cat => {
+        const found = QUESTION_DATABASE[cat].find(q => q.id === questionId);
+        if (found) targetQ = found;
+    });
+
+    if (!targetQ) targetQ = QUESTION_DATABASE.java[0];
+
+    content.innerHTML = `
+        <span class="badge badge-info" style="margin-bottom: 1rem;">${targetQ.category} • Retry Question</span>
+        <h3 style="font-size: 1.15rem; color: var(--text-primary); margin-bottom: 1.25rem;">${targetQ.question}</h3>
+
+        <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 1.5rem;" id="practiceModalOptions">
+            ${targetQ.options.map((opt, idx) => `
+                <div class="option-card" onclick="submitPracticeModalAnswer(${idx}, ${targetQ.correct}, '${targetQ.explanation.replace(/'/g, "\\'")}')" style="padding: 10px 14px; font-size: 0.9rem;">
+                    <span class="option-prefix">${String.fromCharCode(65 + idx)}</span>
+                    <span>${opt}</span>
+                </div>
+            `).join('')}
+        </div>
+
+        <div id="practiceModalFeedback" style="display: none; margin-bottom: 1rem;"></div>
+        <div style="text-align: right;">
+            <button type="button" class="btn btn-secondary" onclick="closePracticeModal()">Close</button>
+        </div>
+    `;
+
+    modal.style.display = "flex";
+}
+
+function submitPracticeModalAnswer(selectedIdx, correctIdx, explanationText) {
+    const feedback = document.getElementById("practiceModalFeedback");
+    if (!feedback) return;
+
+    const isCorrect = selectedIdx === correctIdx;
+    feedback.style.display = "block";
+    feedback.innerHTML = `
+        <div style="padding: 1rem; border-radius: 8px; background: ${isCorrect ? 'var(--success-light)' : 'var(--danger-light)'}; border: 1px solid ${isCorrect ? 'var(--success-color)' : 'var(--danger-color)'};">
+            <h4 style="color: ${isCorrect ? 'var(--success-color)' : 'var(--danger-color)'}; margin-bottom: 0.5rem;">
+                ${isCorrect ? '🎉 Correct! Great Improvement!' : '❌ Still Incorrect! Learn from explanation below:'}
+            </h4>
+            <p style="font-size: 0.9rem; color: var(--text-primary);">${explanationText}</p>
+        </div>
+    `;
+
+    if (isCorrect) {
+        showToast("Great job! You mastered this question!", "success");
+    }
+}
+
+function closePracticeModal() {
+    const modal = document.getElementById("practiceModal");
+    if (modal) modal.style.display = "none";
+}
+
+/**
+ * Daily Challenge Handler
  */
 function renderDailyChallengeCard() {
-    const daily = StorageEngine.getDailyChallengeData();
-    const statusBadge = document.getElementById("dailyStatusBadge");
-    const startBtn = document.getElementById("dailyStartBtn");
+    const status = StorageEngine.getDailyChallengeData();
+    const btn = document.getElementById("dailyStartBtn");
+    const badge = document.getElementById("dailyStatusBadge");
 
-    if (statusBadge && startBtn) {
-        if (daily.completed) {
-            statusBadge.className = "badge badge-success";
-            statusBadge.textContent = "✓ Completed Today (+50 XP)";
-            startBtn.disabled = true;
-            startBtn.textContent = "✓ Challenge Completed";
-        } else {
-            statusBadge.className = "badge badge-info";
-            statusBadge.textContent = "⏱️ Available Today (+50 XP Reward)";
-            startBtn.disabled = false;
-            startBtn.textContent = "🚀 Start Daily Challenge";
+    if (status.completed) {
+        if (badge) {
+            badge.textContent = `✅ Completed Today (Score: ${status.score}/${status.total})`;
+            badge.className = "badge badge-success";
+        }
+        if (btn) {
+            btn.disabled = true;
+            btn.textContent = "✅ Challenge Completed Today";
         }
     }
 }
 
+function startDailyChallenge() {
+    const status = StorageEngine.getDailyChallengeData();
+    if (status.completed) {
+        showToast("You have already completed today's daily challenge!", "info");
+        return;
+    }
+
+    let allQuestions = [];
+    Object.keys(QUESTION_DATABASE).forEach(cat => {
+        allQuestions = allQuestions.concat(QUESTION_DATABASE[cat]);
+    });
+
+    const shuffled = shuffleArray(allQuestions).slice(0, 5);
+
+    QuizState.playerName = StorageEngine.getPlayerName();
+    QuizState.categoryKey = "daily";
+    QuizState.categoryName = "Daily Challenge";
+    QuizState.difficulty = "Medium";
+    QuizState.mode = "exam";
+    QuizState.questionLimit = 5;
+    QuizState.questions = shuffled;
+    QuizState.currentIndex = 0;
+    QuizState.userAnswers = {};
+    QuizState.userConfidence = {};
+    QuizState.perQuestionTime = {};
+    QuizState.markedForReview = {};
+    QuizState.hintsUsed = {};
+    QuizState.learningFeedback = {};
+    QuizState.isSubmitted = false;
+    QuizState.isDailyChallenge = true;
+    QuizState.startTime = Date.now();
+    QuizState.currentQuestionStartTime = Date.now();
+    QuizState.remainingSeconds = 300;
+
+    if (QuizState.timerInterval) clearInterval(QuizState.timerInterval);
+    QuizState.timerInterval = setInterval(handleTimerTick, 1000);
+
+    showSection("quizDashboard");
+    renderQuestion(0);
+    renderQuestionPalette();
+}
+
 /**
- * Render Bookmarks Section
+ * Bookmarks Section Renderer
  */
 function renderBookmarks() {
-    const bookmarks = StorageEngine.getBookmarks();
     const list = document.getElementById("bookmarksList");
     const emptyState = document.getElementById("bookmarksEmptyState");
-
     if (!list) return;
 
+    const bookmarks = StorageEngine.getBookmarks();
     if (bookmarks.length === 0) {
         list.innerHTML = "";
         if (emptyState) emptyState.style.display = "block";
@@ -985,48 +1415,41 @@ function renderBookmarks() {
 
     bookmarks.forEach(bm => {
         const card = document.createElement("div");
-        card.className = "review-card";
-
-        const note = StorageEngine.getNoteForQuestion(bm.id);
+        card.className = "category-card";
+        card.style.marginBottom = "1.25rem";
+        card.style.textAlign = "left";
 
         card.innerHTML = `
-            <div class="review-header">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
                 <span class="badge badge-info">${bm.category} • ${bm.difficulty}</span>
                 <button type="button" class="btn btn-outline" style="padding: 4px 10px; font-size: 0.8rem;" onclick="removeBookmark('${bm.id}')">🗑️ Remove</button>
             </div>
-
-            <h4 class="review-q-title">${bm.question}</h4>
-
-            <div class="explanation-details-box">
-                <div class="exp-block">
-                    <span class="exp-badge">💡 Hint:</span>
-                    <p>${bm.hint}</p>
-                </div>
-                <div class="exp-block">
-                    <span class="exp-badge">🧠 Explanation:</span>
-                    <p>${bm.explanation}</p>
-                </div>
-                ${note ? `<div class="exp-block"><span class="exp-badge">📝 Your Personal Note:</span><p>${note}</p></div>` : ''}
+            <h4 style="font-size: 1.05rem; color: var(--text-primary); margin-bottom: 0.75rem;">${bm.question}</h4>
+            <div style="font-size: 0.9rem; color: var(--text-secondary); background: var(--bg-secondary); padding: 0.75rem; border-radius: 8px;">
+                💡 <strong>Hint:</strong> ${bm.hint || ''}<br>
+                📖 <strong>Explanation:</strong> ${bm.explanation || ''}
             </div>
         `;
-
         list.appendChild(card);
     });
 }
 
-function removeBookmark(questionId) {
-    StorageEngine.toggleBookmark({ id: questionId });
+function removeBookmark(qId) {
+    let bookmarks = StorageEngine.getBookmarks();
+    bookmarks = bookmarks.filter(b => b.id !== qId);
+    localStorage.setItem(STORAGE_KEYS.BOOKMARKS, JSON.stringify(bookmarks));
+    showToast("Bookmark removed", "info");
     renderBookmarks();
 }
 
 /**
- * Render Achievements & Badges
+ * Achievements & Badges Renderer
  */
 function renderAchievements() {
-    const unlocked = StorageEngine.getUnlockedAchievements();
     const grid = document.getElementById("achievementsGrid");
-
     if (!grid) return;
+
+    const unlocked = StorageEngine.getUnlockedAchievements();
     grid.innerHTML = "";
 
     BADGES_CONFIG.forEach(b => {
@@ -1036,89 +1459,67 @@ function renderAchievements() {
 
         card.innerHTML = `
             <div class="achievement-icon">${b.icon}</div>
-            <h4 class="achievement-title">${b.title}</h4>
-            <p class="achievement-desc">${b.desc}</p>
-            <span class="badge ${isUnlocked ? 'badge-success' : 'badge-secondary'}" style="margin-top: 8px;">
-                ${isUnlocked ? '✓ Unlocked' : '🔒 Locked'}
+            <h4>${b.title}</h4>
+            <p>${b.desc}</p>
+            <span class="badge ${isUnlocked ? 'badge-success' : 'badge-info'}" style="margin-top: 0.5rem; display: inline-block;">
+                ${isUnlocked ? '✅ Unlocked' : '🔒 Locked'}
             </span>
         `;
-
         grid.appendChild(card);
     });
 }
 
 /**
- * Render Profile Page
- */
-function renderProfile() {
-    const stats = StorageEngine.getUserDashboardStats();
-    document.getElementById("profName").textContent = stats.playerName;
-    document.getElementById("profXP").textContent = `${stats.currentXP} XP`;
-    document.getElementById("profLevel").textContent = `Level ${stats.currentLevel.level}: ${stats.currentLevel.title}`;
-    document.getElementById("profStreak").textContent = `🔥 ${stats.streak.currentStreak} Day Streak`;
-    document.getElementById("profQuizzes").textContent = stats.quizzesCompleted;
-    document.getElementById("profBest").textContent = stats.bestScore;
-    document.getElementById("profAccuracy").textContent = `${stats.accuracy}%`;
-}
-
-function updateProfileName(event) {
-    if (event) event.preventDefault();
-    const input = document.getElementById("profileNameInput");
-    if (input && input.value.trim()) {
-        StorageEngine.setPlayerName(input.value.trim());
-        showToast("Profile name updated!", "success");
-        renderProfile();
-        renderUserDashboard();
-    }
-}
-
-/**
- * Render Leaderboard & History
+ * Local Leaderboard Renderer
  */
 function renderLeaderboard() {
-    const list = StorageEngine.getLeaderboard();
+    const top3 = document.getElementById("top3Container");
     const tbody = document.getElementById("leaderboardTableBody");
-    const top3Container = document.getElementById("top3Container");
+    if (!tbody) return;
 
-    if (!tbody || !top3Container) return;
+    const leaderboard = StorageEngine.getLeaderboard();
 
-    top3Container.innerHTML = "";
-    const ranks = ["🥇 1st Place", "🥈 2nd Place", "🥉 3rd Place"];
-
-    list.slice(0, 3).forEach((item, idx) => {
-        const card = document.createElement("div");
-        card.className = `top-player-card rank-${idx + 1}`;
-        card.innerHTML = `
-            <span class="rank-badge">${ranks[idx]}</span>
-            <h4 class="player-name">${item.name}</h4>
-            <div class="player-score">${item.xp || (item.score * 10)} XP (Lvl ${item.level || 1})</div>
-            <div class="player-meta">${item.category} • ${item.percentage}%</div>
-        `;
-        top3Container.appendChild(card);
-    });
+    if (top3) {
+        top3.innerHTML = "";
+        const top3List = leaderboard.slice(0, 3);
+        top3List.forEach((entry, idx) => {
+            const card = document.createElement("div");
+            card.className = `top-player-card rank-${idx + 1}`;
+            card.innerHTML = `
+                <div class="rank-badge">${idx === 0 ? '🥇 1st Place' : idx === 1 ? '🥈 2nd Place' : '🥉 3rd Place'}</div>
+                <div class="player-name">${entry.name}</div>
+                <div class="player-score">${entry.xp} XP</div>
+                <div class="player-meta">Level ${entry.level} • ${entry.percentage}% Accuracy</div>
+            `;
+            top3.appendChild(card);
+        });
+    }
 
     tbody.innerHTML = "";
-    list.forEach((item, idx) => {
+    leaderboard.forEach((entry, idx) => {
         const row = document.createElement("tr");
         row.innerHTML = `
-            <td><strong>#${idx + 1}</strong></td>
-            <td><strong>${item.name}</strong></td>
-            <td><span class="badge badge-warning">Lvl ${item.level || 1}</span></td>
-            <td><strong>${item.xp || (item.score * 10)} XP</strong></td>
-            <td>${item.category}</td>
-            <td><strong style="color: var(--accent-blue);">${item.percentage}%</strong></td>
-            <td>${item.date || 'Recent'}</td>
+            <td>#${idx + 1}</td>
+            <td><strong>${entry.name}</strong></td>
+            <td><span class="badge badge-info">Level ${entry.level}</span></td>
+            <td style="color: var(--warning-color); font-weight: 700;">${entry.xp} XP</td>
+            <td>${entry.category || 'Mixed'}</td>
+            <td>${entry.percentage}%</td>
+            <td style="color: var(--text-secondary); font-size: 0.85rem;">${entry.date}</td>
         `;
         tbody.appendChild(row);
     });
 }
 
+/**
+ * Quiz Attempt History Renderer
+ */
 function renderHistory() {
-    const history = StorageEngine.getHistory();
     const tbody = document.getElementById("historyTableBody");
     const emptyState = document.getElementById("historyEmptyState");
-
     if (!tbody) return;
+
+    const history = StorageEngine.getHistory();
 
     if (history.length === 0) {
         tbody.innerHTML = "";
@@ -1132,33 +1533,61 @@ function renderHistory() {
     history.forEach((h, idx) => {
         const row = document.createElement("tr");
         row.innerHTML = `
-            <td>#${idx + 1}</td>
+            <td>#${history.length - idx}</td>
             <td><strong>${h.playerName}</strong></td>
-            <td>${h.category}</td>
-            <td><span class="badge badge-info">${h.difficulty}</span></td>
-            <td>${h.score} / ${h.totalQuestions}</td>
-            <td><strong style="color: var(--accent-blue);">${h.percentage}%</strong></td>
-            <td>${h.timeTaken || '-'}</td>
-            <td>${h.date}</td>
+            <td><span class="badge badge-info">${h.category}</span></td>
+            <td>${h.difficulty}</td>
+            <td style="font-weight: 700; color: var(--accent-blue);">${h.score} / ${h.totalQuestions}</td>
+            <td><strong>${h.percentage}%</strong></td>
+            <td>${h.timeFormatted || 'N/A'}</td>
+            <td style="color: var(--text-secondary); font-size: 0.85rem;">${h.date}</td>
         `;
         tbody.appendChild(row);
     });
 }
 
 function clearUserHistory() {
-    if (confirm("Are you sure you want to clear your entire quiz history and reset leaderboard data?")) {
-        StorageEngine.clearHistory();
-        showToast("Quiz history cleared", "info");
+    localStorage.removeItem(STORAGE_KEYS.HISTORY);
+    showToast("Quiz history cleared!", "info");
+    renderHistory();
+    renderUserDashboard();
+}
+
+/**
+ * Profile Renderer
+ */
+function renderProfile() {
+    const stats = StorageEngine.getUserDashboardStats();
+    const nameEl = document.getElementById("profName");
+    const lvlEl = document.getElementById("profLevel");
+    const xpEl = document.getElementById("profXP");
+    const streakEl = document.getElementById("profStreak");
+    const quizEl = document.getElementById("profQuizzes");
+    const bestEl = document.getElementById("profBest");
+
+    if (nameEl) nameEl.textContent = stats.playerName;
+    if (lvlEl) lvlEl.textContent = `Level ${stats.currentLevel.level} — ${stats.currentLevel.title}`;
+    if (xpEl) xpEl.textContent = `${stats.currentXP} XP`;
+    if (streakEl) streakEl.textContent = `🔥 ${stats.streak.currentStreak} Day`;
+    if (quizEl) quizEl.textContent = stats.quizzesCompleted;
+    if (bestEl) bestEl.textContent = stats.bestScore;
+}
+
+function updateProfileName(event) {
+    if (event) event.preventDefault();
+    const input = document.getElementById("profileNameInput");
+    if (input && input.value.trim()) {
+        StorageEngine.setPlayerName(input.value.trim());
+        showToast("Profile name updated!", "success");
+        renderProfile();
         renderUserDashboard();
-        renderHistory();
-        renderLeaderboard();
     }
 }
 
 function resetAllData() {
-    if (confirm("WARNING: This will reset all your XP, Levels, Badges, Streaks, History, and Settings. Continue?")) {
+    if (confirm("Are you sure you want to reset all stored XP, levels, badges, history, and mistakes?")) {
         StorageEngine.clearAllData();
-        showToast("All application data reset successfully", "danger");
-        setTimeout(() => location.reload(), 1000);
+        showToast("All application data has been reset.", "warning");
+        location.reload();
     }
 }
